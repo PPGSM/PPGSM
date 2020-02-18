@@ -22,4 +22,11 @@ Installation
   
   --Installing SEAL--   
   We can get SEAL installation file from this command : git clone https://github.com/microsoft/SEAL   
-  
+  go to the native file using this command : cd SEAL/native   
+  make build directory and move using commands below :    
+  mkdir build   
+  cd build   
+  make installation file using this : cmake ../src
+  Finally, we can install SEAL using :   
+  make
+  sudo make install
