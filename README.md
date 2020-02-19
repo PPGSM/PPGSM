@@ -30,7 +30,7 @@ Installation & Test
    sudo make install   
  2. Testcode running     
    compile test code using : cmake .   
-   run compiled binary : ./testPPGSM   
+   run compiled binary : ./testPPGSM sampleData/graphinfo1 sampleData/graphinfo2 sampleData/graphinfo3   
    
 Utilities   
    1. User-side utilites(functions can found in utility/graph_client.h)   
