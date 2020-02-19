@@ -18,7 +18,6 @@ Installation
    Finally, using commands below, we install TFHE and are able to use it :   
    make   
    sudo make install   
-  
    --Installing SEAL--   
    We can get SEAL installation file from this command : git clone https://github.com/microsoft/SEAL   
    go to the native file using this command : cd SEAL/native   
