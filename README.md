@@ -28,9 +28,11 @@ Installation
    Finally, we can install SEAL using :   
    make
    sudo make install   
+   
 Test file   
    compile test code using : cmake .   
    run compiled binary : ./testPPGSM   
+   
 Utilities   
    1. User-side utilites(functions can found in utility/graph_client.h)   
     creating real/dummy node/edges   
