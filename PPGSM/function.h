@@ -2,9 +2,6 @@
 #include <tfhe/tfhe_io.h>
 #include "seal/seal.h"
 
-LweSample* CipherAdd(LweSample *a, LweSample *b, int bitsize, const TFheGateBootstrappingCloudKeySet* EK);
-LweSample* CipherMin(LweSample *a, LweSample *b, int bitsize, const TFheGateBootstrappingCloudKeySet* EK);
-LweSample* CipherCmp(LweSample *a, LweSample *b, int bitsize, const TFheGateBootstrappingCloudKeySet* EK);
 void MakeGraph(Graph& G, char *Mat, char *NodeInfo, char *Trait, const TFheGateBootstrappingSecretKeySet *PK, seal::PublicKey public_key, std::shared_ptr<seal::SEALContext> context);
 double getEntrophy(std::vector<double> L);
 double standardDeviation(std::vector<double> L);

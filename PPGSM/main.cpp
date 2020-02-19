@@ -9,11 +9,11 @@
 #include <fstream>
 
 // Header from graph processing objects.
-#include "struct.h"
-#include "graph_client.h"
+#include "structure/struct.h"
+#include "utility/graph_client.h"
 #include "function.h"
-#include "graph.h"
-#include "AdvSearch.h"
+#include "structure/graph.h"
+#include "utility/AdvSearch.h"
 
 using namespace std;
 using namespace seal;
@@ -21,7 +21,6 @@ using namespace seal;
 bool cmp3(const pair<int, int> &a, const pair<int, int> &b){
     return a.second < b.second;
 }
-
 
 int main(int argc, char **argv){
 
@@ -70,19 +69,6 @@ int main(int argc, char **argv){
 	end_ = clock();
 	cout <<"make graph: " <<(double)(end_ - start_) / CLOCKS_PER_SEC <<endl;
 /*
-	//check graph changed into directed graph
-	changeGraph(G, 0);
-	for(int i=0;i<G.node->size();i++){
-		cout <<"node " <<i <<": ";
-		struct nodeList current = findNode(G,i);
-		list<struct Neighbor>::iterator iter;
-		for(iter = current.node->Neighbors->begin(); iter != current.node->Neighbors->end();++iter){
-			cout <<(*iter).NodeNumber <<", ";
-		}
-		cout <<endl;
-	}	
-*/
-
 	//compare BC and PC
 	vector<double> BC = betweenness(G, &key->cloud);
 	vector<double> PC = allPathBetweennessCentrality(G, &key->cloud, 0, G.node->size()-1);
@@ -99,7 +85,7 @@ int main(int argc, char **argv){
 		cout << BC[i] <<"\t" <<PC[i] <<endl;
 	}
 	cout <<endl;
-
+*/
 
 	/* check graph assessment functions */ 
 /*	//find all possible path(real and dummy both) with attack cost and risk
