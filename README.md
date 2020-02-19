@@ -27,4 +27,18 @@ Installation
    make installation file using this : cmake ../src
    Finally, we can install SEAL using :   
    make
-   sudo make install
+   sudo make install   
+Test file
+   compile test code using : cmake .
+   run compiled binary : ./testPPGSM
+Utilities   
+   1. User-side utilites(functions can found in utility/graph_client.h)   
+    creating real/dummy node/edges   
+    creating graph   
+   2. Server-side utilites(functions can found in structure/graph.h)   
+    probing encrypted graph   
+    simple metrics : mincut, minlength, calculating degree vector   
+    graph pruning operation   
+    complex operations : probability of attack succeess, return on investment  
+    centrality metrics : clossness/harmonic/etweenness centrality   
+    heurisitc dummy node/edge addition   
