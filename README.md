@@ -29,7 +29,7 @@ Installation
    make
    sudo make install   
    
-Test file   
+Testcode running   
    compile test code using : cmake .   
    run compiled binary : ./testPPGSM   
    
