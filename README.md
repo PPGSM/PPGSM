@@ -5,7 +5,7 @@ Prerequesites
  1. Ubuntu 18.04 above   
  2. TFHE, SEAL homomorphic encryption library.   
 
-Installation   
+Installation & Test  
  1. Install the prerequsites   
   To use PPGSM, you need to install two homomorphic encrpytion libraries : TFHE and SEAL.   
    --Installing TFHE--   
@@ -28,8 +28,7 @@ Installation
    Finally, we can install SEAL using :   
    make
    sudo make install   
-   
-Testcode running   
+ 2. Testcode running     
    compile test code using : cmake .   
    run compiled binary : ./testPPGSM   
    
