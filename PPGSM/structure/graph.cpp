@@ -1,6 +1,5 @@
 #include "struct.h"
 #include "../function.h"
-#include "../encryption.h"
 #include "../utility/graph_client.h"
 #include <tfhe/tfhe.h>
 #include <tfhe/tfhe_io.h>
@@ -34,7 +33,8 @@ static bool operator <(degInfo &a, degInfo &b){
 
 //find all possible path between source node and destination node with attack cost and risk
 int num = 1;
-void probe(struct Graph& G, Ciphertext cost, Ciphertext risk, struct nodeList &N, LweSample* Tmp, vector<int> path, int dest, const TFheGateBootstrappingCloudKeySet* EK, const TFheGateBootstrappingSecretKeySet *PK, Evaluator &eval, auto &relin_keys, std::shared_ptr<seal::SEALContext> context, auto &secret_key){
+
+void probe(struct Graph& G, Ciphertext cost, Ciphertext risk, struct nodeList &N, LweSample* Tmp, vector<int> path, int dest, const TFheGateBootstrappingCloudKeySet* EK, Evaluator &eval, auto &relin_keys, std::shared_ptr<seal::SEALContext> context){
 	N.visited = true;
 	if(N.node->user == false){
 		//calculate attack cost
@@ -60,18 +60,6 @@ void probe(struct Graph& G, Ciphertext cost, Ciphertext risk, struct nodeList &N
 			cout << P+1 << " ";
 		}
 		cout << endl;
-		Decryptor decryptor(context, secret_key);
-                CKKSEncoder encoder(context);
-                Plaintext cost_result, risk_result;
-                decryptor.decrypt(cost, cost_result);
-                decryptor.decrypt(risk,risk_result);
-                vector<double> resultCost, resultRisk;
-                encoder.decode(cost_result, resultCost);
-                encoder.decode(risk_result, resultRisk);
-                int real = bootsSymDecrypt(Tmp, PK);
-		cout <<"cost: " <<resultCost[0] << endl;
-                cout <<"risk: " <<resultRisk[0] <<endl;
-		cout <<"real: " <<real <<endl <<endl;
         }
         else{
 		for(iter = N.node->Neighbors->begin(); iter != N.node->Neighbors->end(); ++iter){
@@ -80,7 +68,7 @@ void probe(struct Graph& G, Ciphertext cost, Ciphertext risk, struct nodeList &N
 				if((*iter).NodeNumber == (*iter2).node->NodeNumber && (*iter2).visited == false){
 					LweSample *Temp = new_gate_bootstrapping_ciphertext(EK->params);
 					bootsAND(Temp,Tmp,(*iter).T,EK);
-			probe(G, cost, risk, (*iter2), Temp, path, dest, EK, PK, eval, relin_keys, context, secret_key);
+			probe(G, cost, risk, (*iter2), Temp, path, dest, EK, eval, relin_keys, context);
 					(*iter2).visited = false;
 				}
 			}
@@ -90,7 +78,7 @@ void probe(struct Graph& G, Ciphertext cost, Ciphertext risk, struct nodeList &N
 }
 
 //initial function to start probe
-void init_probe(struct Graph& G, int startNumber, int destNumber, const TFheGateBootstrappingCloudKeySet* EK, const TFheGateBootstrappingSecretKeySet *PK, Evaluator &eval, seal::RelinKeys& relin_keys, seal::PublicKey public_key, std::shared_ptr<seal::SEALContext> context, seal::SecretKey secret_key){
+void init_probe(struct Graph& G, int startNumber, int destNumber, const TFheGateBootstrappingCloudKeySet* EK, Evaluator &eval, seal::RelinKeys& relin_keys, seal::PublicKey public_key, std::shared_ptr<seal::SEALContext> context){
 	double scale = pow(2.0,40);
 	CKKSEncoder encoder(context);
 	Plaintext Cost,Risk;
@@ -121,7 +109,7 @@ void init_probe(struct Graph& G, int startNumber, int destNumber, const TFheGate
 		bootsCONSTANT(T, 1, EK);
 		vector<int> path;
 
-		probe(G, cost, risk, inode, T, path, destNumber, EK, PK, eval,relin_keys, context, secret_key);
+		probe(G, cost, risk, inode, T, path, destNumber, EK, eval,relin_keys, context);
 		delete_gate_bootstrapping_ciphertext(T);
 		break;
 	}

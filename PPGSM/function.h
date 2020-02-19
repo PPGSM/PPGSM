@@ -2,7 +2,6 @@
 #include <tfhe/tfhe_io.h>
 #include "seal/seal.h"
 
-void MakeGraph(Graph& G, char *Mat, char *NodeInfo, char *Trait, const TFheGateBootstrappingSecretKeySet *PK, seal::PublicKey public_key, std::shared_ptr<seal::SEALContext> context);
 double getEntrophy(std::vector<double> L);
 double standardDeviation(std::vector<double> L);
 int sh(struct Graph& G, int a, int t, const TFheGateBootstrappingSecretKeySet *PK);

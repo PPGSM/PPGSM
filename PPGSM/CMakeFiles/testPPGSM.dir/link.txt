@@ -1,0 +1,1 @@
+/usr/bin/c++     CMakeFiles/testPPGSM.dir/test.cpp.o CMakeFiles/testPPGSM.dir/utility/graph_client.cpp.o CMakeFiles/testPPGSM.dir/function.cpp.o CMakeFiles/testPPGSM.dir/structure/graph.cpp.o CMakeFiles/testPPGSM.dir/utility/AdvSearch.cpp.o  -o testPPGSM  /usr/local/lib/libseal-3.4.a -ltfhe-spqlios-fma -pthread 

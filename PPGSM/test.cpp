@@ -112,7 +112,7 @@ int main(int argc, char **argv){
 	//find all possible path(real and dummy both) with attack cost and risk
         start_ = clock();
 	cout <<"*** Probing result ***" <<endl;
-        init_probe(G, startPoint, endPoint, &key->cloud, key, evaluator, relin_keys, public_key, context, secret_key);
+        init_probe(G, startPoint, endPoint, &key->cloud, evaluator, relin_keys, public_key, context);
         end_ = clock();
         cout <<"total time to probing: " <<(double)(end_ - start_) / CLOCKS_PER_SEC <<endl <<endl;
 
