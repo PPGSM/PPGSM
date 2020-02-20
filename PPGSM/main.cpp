@@ -68,78 +68,7 @@ int main(int argc, char **argv){
 	MakeGraph(G, argv[1], argv[2], argv[3], key, public_key, context);
 	end_ = clock();
 	cout <<"make graph: " <<(double)(end_ - start_) / CLOCKS_PER_SEC <<endl;
-/*
-	//compare BC and PC
-	vector<double> BC = betweenness(G, &key->cloud);
-	vector<double> PC = allPathBetweennessCentrality(G, &key->cloud, 0, G.node->size()-1);
-	BC[0]=1;
-	BC[G.node->size()-1]=1;
-	cout <<"size: " <<G.node->size() <<endl;
-	for(int i=0;i<G.node->size();i++){
-		if(BC[i]==0){
-			BC[i]=0.000001;
-		}
-		if(PC[i]==0){
-			PC[i]=0.000001;
-		}
-		cout << BC[i] <<"\t" <<PC[i] <<endl;
-	}
-	cout <<endl;
-*/
 
-	/* check graph assessment functions */ 
-/*	//find all possible path(real and dummy both) with attack cost and risk
-	start_ = clock();
-	init_probe(G, sP, G.node->size()-1, &key->cloud, key, evaluator, relin_keys, public_key, context, secret_key);
-	end_ = clock();
-	cout <<"probe: " <<(double)(end_ - start_) / CLOCKS_PER_SEC <<endl;
-
-	//find a mincut of the graph
-//	int minLen = minCut(G,0,G.node->size()-1,&key->cloud);
-//	cout <<"Length of the shortest path: " <<minLen <<endl;
-
-	//find MPL(mean path length)
-	start_ = clock();
-	mpl(G,sP,G.node->size()-1,&key->cloud, evaluator, relin_keys, public_key, context);
-	end_ = clock();
-	cout <<"MPL: " <<(double)(end_ - start_) / CLOCKS_PER_SEC <<endl;
-
-	start_ = clock();
-	int min = minCut(G,sP,G.node->size()-1,&key->cloud);
-//	cout <<"min cut: " <<min <<endl;
-	end_ = clock();
-	cout <<"minCut: " <<(double)(end_ - start_) / CLOCKS_PER_SEC <<endl;
-
-	//pruning and probe again.
-	start_ = clock();
-//	addNodeRestriction(G,0);
-//	addNodeRestriction(G,G.node->size()-1);
-	struct degree nodeDegree = getDegree(G);
-	prune(G,nodeDegree,1);
-	end_ = clock();
-	cout <<"prune: " <<(double)(end_ - start_) / CLOCKS_PER_SEC <<endl;	
-
-//	init_probe(G, 0, G.node->size()-1, &key->cloud, key, evaluator, relin_keys, public_key, context, secret_key);
-
-	MakeGraph(G, argv[1], argv[2], argv[3], key, public_key, context);
-	//calculate independent probabilty of attack success
-	start_ = clock();	
-	PrAtkSuccess(G, sP, G.node->size()-1, &key->cloud, key, evaluator, relin_keys, public_key, context, secret_key);
-	end_ = clock();
-	cout <<"Ind prob: " <<(double)(end_ - start_) / CLOCKS_PER_SEC <<endl;
-
-	//calculate cumulative probability of attack success
-	start_ = clock();
-	cumulPrAtkSuccess(G, sP, evaluator, relin_keys, public_key, context, secret_key);
-	end_ = clock();
-	cout <<"Cum prob: " <<(double)(end_ - start_) / CLOCKS_PER_SEC <<endl;
-
-	//calculate return on investment
-	start_ = clock();
-	returnInvestment(G, sP, G.node->size()-1, &key->cloud, key, evaluator, relin_keys, public_key, context, secret_key);
-	end_ = clock();
-	cout <<"ROI: " <<(double)(end_ - start_) / CLOCKS_PER_SEC <<endl;
-*/
 /*
 	// compare normal case, random adding case, heuristic adding case
 	srand(time(NULL));	
