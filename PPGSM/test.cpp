@@ -112,7 +112,7 @@ int main(int argc, char **argv){
 	//find all possible path(real and dummy both) with attack cost and risk
         start_ = clock();
 	cout <<"*** Probing result ***" <<endl;
-        init_probe(G, startPoint, endPoint, &key->cloud, evaluator, relin_keys, public_key, context);
+        init_probe(G, startPoint, endPoint, &key->cloud, key, evaluator, relin_keys, public_key, context, secret_key);
         end_ = clock();
         cout <<"total time to probing: " <<(double)(end_ - start_) / CLOCKS_PER_SEC <<endl <<endl;
 
@@ -134,19 +134,26 @@ int main(int argc, char **argv){
         end_ = clock();
         cout <<"time to pruning 1 node: " <<(double)(end_ - start_) / CLOCKS_PER_SEC <<endl <<endl;
 
-	/*
+	
 	MakeGraph(G, argv[1], argv[2], argv[3], key, public_key, context);
-        //calculate independent probabilty of attack success
-        start_ = clock();       
+	//calculate independent probabilty of attack success
+	cout <<"*** Probabilities of attack success ***" <<endl;
+	start_ = clock();       
         PrAtkSuccess(G, startPoint, endPoint, &key->cloud, key, evaluator, relin_keys, public_key, context, secret_key);
         end_ = clock();
-        cout <<"Ind prob: " <<(double)(end_ - start_) / CLOCKS_PER_SEC <<endl;
-
+        cout <<"Time to calculate independent probability: " <<(double)(end_ - start_) / CLOCKS_PER_SEC <<endl <<endl;
+	/*
         //calculate cumulative probability of attack success
         start_ = clock();
         cumulPrAtkSuccess(G, startPoint, evaluator, relin_keys, public_key, context, secret_key);
         end_ = clock();
         cout <<"Cum prob: " <<(double)(end_ - start_) / CLOCKS_PER_SEC <<endl;
+	
+	//calculate return onminvestment
+        start_ = clock();
+        returnInvestment(G, sP, G.node->size()-1, &key->cloud, key, evaluator, relin_keys, public_key, context, secret_key);
+        end_ = clock();
+        cout <<"ROI: " <<(double)(end_ - start_) / CLOCKS_PER_SEC <<endl;	
 	*/
 	return 0;
 }
