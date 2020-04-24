@@ -21,8 +21,8 @@ Then, make directory named 'build': mkdir build
 Go to the 'build' directory: cd build   
 Then, make installation file in the build directory: cmake ../src   
 Finally, using commands below, install TFHE:   
-make   
-sudo make install   
+  make   
+  sudo make install   
 
 1.2. Installing SEAL 
 
@@ -39,6 +39,8 @@ Finally, install SEAL:
    
 2. Running testcode     
 
+Install PP-GSM module: git clone https://github.com/PPGSM/PPGSM
+Move to PPGSM directory: cd PPGSM/PPGSM
 Compile test code: cmake .   
 Run compiled binary: ./testPPGSM sampleData/graphinfo1 sampleData/graphinfo2 sampleData/graphinfo3   
    
