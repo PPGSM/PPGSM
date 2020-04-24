@@ -16,10 +16,19 @@ To use PPGSM, install two homomorphic encrpytion libraries: TFHE and SEAL.
 
 Get the TFHE installation file available at: https://github.com/tfhe/tfhe/tarball/master     
 (Note that the TFHE github main version would have a problem on installing TFHE)   
-Unzip the tar.gz file into a directory and go to the directory where README.md and LICENSE are.
-Then, make directory named 'build': mkdir build   
-Go to the 'build' directory: cd build   
-Then, make installation file in the build directory: cmake ../src   
+Unzip the tar.gz file into a directory and go to the directory where README.md and LICENSE are.   
+Then, make directory named 'build':   
+
+    mkdir build   
+  
+Go to the 'build' directory:   
+
+    cd build   
+    
+Then, make installation file in the build directory:   
+
+    cmake ../src   
+    
 Finally, using commands below, install TFHE:    
 
     make    
@@ -28,7 +37,10 @@ Finally, using commands below, install TFHE:
 1.2. Installing SEAL 
 
 Get SEAL installation file: git clone https://github.com/microsoft/SEAL   
-Go to the SEAL native directory: cd SEAL/native   
+Go to the SEAL native directory:   
+
+    cd SEAL/native   
+    
 Make 'build' directory, change directory and install:    
 
     mkdir build    
@@ -40,12 +52,22 @@ Finally, install SEAL:
     make    
     sudo make install       
    
-2. Running testcode     
+2. Running testcode    
+Install PP-GSM module:    
 
-Install PP-GSM module: git clone https://github.com/PPGSM/PPGSM
-Move to PPGSM directory: cd PPGSM/PPGSM
-Compile test code: cmake .   
-Run compiled binary: ./testPPGSM sampleData/graphinfo1 sampleData/graphinfo2 sampleData/graphinfo3   
+    git clone https://github.com/PPGSM/PPGSM
+    
+Move to PPGSM directory:   
+
+    cd PPGSM/PPGSM
+    
+Compile test code:   
+
+    cmake .   
+    
+Run compiled binary:   
+
+    ./testPPGSM sampleData/graphinfo1 sampleData/graphinfo2 sampleData/graphinfo3   
    
 Utilities
 
