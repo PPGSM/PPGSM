@@ -21,6 +21,7 @@ Then, make directory named 'build': mkdir build
 Go to the 'build' directory: cd build   
 Then, make installation file in the build directory: cmake ../src   
 Finally, using commands below, install TFHE:    
+
     make    
     sudo make install   
 
@@ -29,11 +30,13 @@ Finally, using commands below, install TFHE:
 Get SEAL installation file: git clone https://github.com/microsoft/SEAL   
 Go to the SEAL native directory: cd SEAL/native   
 Make 'build' directory, change directory and install:    
+
     mkdir build    
     cd build    
     make installation file: cmake ../src
 
 Finally, install SEAL:    
+
     make    
     sudo make install       
    
