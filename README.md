@@ -1,45 +1,57 @@
-# PPGSM
+# PP-GSM
 Privacy Preserving Graphical Security Model   
 
-Prerequesites   
- 1. Ubuntu 18.04 above   
- 2. TFHE, SEAL homomorphic encryption library.   
+This software enables one to evaluate the security of a network system in a privacy preserving mannaer.
 
-Installation & Test  
- 1. Install the prerequsites   
-  To use PPGSM, you need to install two homomorphic encrpytion libraries : TFHE and SEAL.   
-   --Installing TFHE--   
-   we can get TFHE installation file from here : https://github.com/tfhe/tfhe/tarball/master     
-   (Github main version would have problem on installing TFHE)   
-   Once you downloaded installation file, extract the tar.gz file and go to the directory where README.md and LICENSE exists.   
-   Then, make directory name build using this command : mkdir build   
-   Go to the build directory : cd build   
-   Then, using cmake, make installation file at the build directory : cmake ../src   
-   Finally, using commands below, we install TFHE and are able to use it :   
-   make   
-   sudo make install   
-   --Installing SEAL--   
-   We can get SEAL installation file from this command : git clone https://github.com/microsoft/SEAL   
-   go to the native file using this command : cd SEAL/native   
-   make build directory and move using commands below :    
+Prerequesites
+- OS: Ubuntu 18.04 above   
+- HE libraries: TFHE and SEAL homomorphic encryption (HE) have to be installed.    
+
+1. Installating and Testing
+
+Install the two HE libraries.    
+To use PPGSM, install two homomorphic encrpytion libraries: TFHE and SEAL.   
+  
+1.1. Installing TFHE   
+
+Get the TFHE installation file available at: https://github.com/tfhe/tfhe/tarball/master     
+(Note that the TFHE github main version would have a problem on installing TFHE)   
+Unzip the tar.gz file into a directory and go to the directory where README.md and LICENSE are.
+Then, make directory named 'build': mkdir build   
+Go to the 'build' directory: cd build   
+Then, make installation file in the build directory: cmake ../src   
+Finally, using commands below, install TFHE:   
+make   
+sudo make install   
+
+1.2. Installing SEAL 
+
+Get SEAL installation file: git clone https://github.com/microsoft/SEAL   
+Go to the SEAL native directory: cd SEAL/native   
+Make 'build' directory, change directory and install:    
    mkdir build   
    cd build   
-   make installation file using this : cmake ../src
-   Finally, we can install SEAL using :   
+   make installation file: cmake ../src
+
+Finally, install SEAL:   
    make
    sudo make install   
- 2. Testcode running     
-   compile test code using : cmake .   
-   run compiled binary : ./testPPGSM sampleData/graphinfo1 sampleData/graphinfo2 sampleData/graphinfo3   
    
-Utilities   
-   1. User-side utilites(functions can found in utility/graph_client.h)   
+2. Running testcode     
+
+Compile test code: cmake .   
+Run compiled binary: ./testPPGSM sampleData/graphinfo1 sampleData/graphinfo2 sampleData/graphinfo3   
+   
+Utilities
+
+   A. User-side utilites (functions can found in utility/graph_client.h)   
     creating real/dummy node/edges   
     creating graph   
-   2. Server-side utilites(functions can found in structure/graph.h)   
+   
+   B. Server-side utilites (functions can found in structure/graph.h)   
     probing encrypted graph   
-    simple metrics : mincut, minlength, calculating degree vector   
+    simple metrics: mincut, minlength, calculating degree vector   
     graph pruning operation   
-    complex operations : probability of attack succeess, return on investment  
-    centrality metrics : clossness/harmonic/etweenness centrality   
+    complex operations: probability of attack succeess, return on investment  
+    centrality metrics: clossness/harmonic/etweenness centrality   
     heurisitc dummy node/edge addition   
