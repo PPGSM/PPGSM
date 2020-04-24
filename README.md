@@ -20,22 +20,22 @@ Unzip the tar.gz file into a directory and go to the directory where README.md a
 Then, make directory named 'build': mkdir build   
 Go to the 'build' directory: cd build   
 Then, make installation file in the build directory: cmake ../src   
-Finally, using commands below, install TFHE:
-    make
+Finally, using commands below, install TFHE:    
+    make    
     sudo make install   
 
 1.2. Installing SEAL 
 
 Get SEAL installation file: git clone https://github.com/microsoft/SEAL   
 Go to the SEAL native directory: cd SEAL/native   
-Make 'build' directory, change directory and install:
-    mkdir build
-    cd build
+Make 'build' directory, change directory and install:    
+    mkdir build    
+    cd build    
     make installation file: cmake ../src
 
-Finally, install SEAL:
-    make
-    sudo make install   
+Finally, install SEAL:    
+    make    
+    sudo make install       
    
 2. Running testcode     
 
