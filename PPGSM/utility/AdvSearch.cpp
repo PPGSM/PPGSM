@@ -12,6 +12,7 @@
 #include <functional>
 #include <random>
 #include <chrono>
+#include <set>
 
 using namespace std;
 
@@ -139,7 +140,7 @@ int degreeBased(Graph &G, int s, int f, double &totalTimeCost, vector<double> B,
 		}
 		sort(Vector.begin(),Vector.end(),cmp2);
 	}
-	printf("Degree based : There is no path...\n");
+//	printf("Degree based : There is no path...\n");
 	return 0;
 }
 
@@ -196,7 +197,7 @@ int BFSattack(Graph &G, int s, int f, double &totalTimeCost, vector<double> B, c
 
 		}
 	}
-	printf("BFS : There is no path...\n");
+//	printf("BFS : There is no path...\n");
 	return 0;
 }
 
@@ -217,6 +218,7 @@ int DFSattack(Graph &G, int s, int f, double &totalTimeCost, vector<double> B, c
 		
                 if(currentNode == f){
                         visitCount++;
+			while(Stack.size())	Stack.pop();
                         return visitCount;
                 }
                 if(visitTable[currentNode] == false){
@@ -252,10 +254,83 @@ int DFSattack(Graph &G, int s, int f, double &totalTimeCost, vector<double> B, c
 			}
                 }
         }
-	
-	printf("DFS : There is no path...\n");
+	while(Stack.size())	Stack.pop();
+//	printf("DFS : There is no path...\n");
 	return 0;	
 }
+
+struct shortPath{
+	int length;
+	vector<int> path;
+};
+
+void shortestPathattack(Graph &G, int s, int f, int minCut, struct nodeList &N, vector<int> path, vector<struct shortPath> &paths, set<int> &searchedNodes, const TFheGateBootstrappingSecretKeySet *PK, const TFheGateBootstrappingCloudKeySet *EK){
+	N.visited = true;
+	path.push_back(N.node->NodeNumber);
+	list<struct Neighbor>::iterator iter;
+
+	if(path.size() > minCut){
+		return;
+	}
+
+	if(N.node->NodeNumber == f){
+		//check a result
+                for(auto P : path)
+                {
+                        cout << P << " ";
+                }
+                cout << endl;
+
+		if(path.size() < minCut){
+                	/////////////
+       		}
+	}
+	else{
+		for(iter = N.node->Neighbors->begin(); iter != N.node->Neighbors->end(); ++iter){
+                        list<struct nodeList>::iterator iter2;
+                        for(iter2 = G.node->begin(); iter2 != G.node->end(); ++iter2){
+                                if((*iter).NodeNumber == (*iter2).node->NodeNumber && (*iter2).visited == false){
+                        		shortestPathattack(G, s, f, minCut, (*iter2), path, paths, searchedNodes, PK, EK);
+                                        (*iter2).visited = false;
+                                }
+                        }
+                }
+	}
+	N.visited = false;
+}
+
+int init_shortestPathattack(Graph &G, int s, int f, int minCut, const TFheGateBootstrappingSecretKeySet *PK, const TFheGateBootstrappingCloudKeySet *EK){
+	set<int> searchedNodes;
+	vector<shortPath> paths;
+
+	for(auto inode : *(G.node)){
+                inode.visited = false;
+        }
+
+	list<struct nodeList>::iterator iter;
+        for(iter = G.node->begin(); iter != G.node->end();++iter){
+                if((*iter).node->NodeNumber == s){
+                        (*iter).visited = true;
+                }
+        }
+
+	for(auto inode : *(G.node)){
+                if(inode.node->NodeNumber != s){
+                        continue;
+                }
+                vector<int> path;
+
+                shortestPathattack(G, s, f, minCut, inode, path, paths, searchedNodes, PK, EK);
+                break;
+        }
+	cout <<"Searched nodes num: " << searchedNodes.size() <<endl;
+
+	int result = searchedNodes.size() - minCut;
+
+	return result;
+
+}
+
 
 int restrictedDFSattack(Graph &G, int s, int f, double &totalTimeCost, vector<double> B, const TFheGateBootstrappingSecretKeySet *PK, const TFheGateBootstrappingCloudKeySet *EK){
 	clock_t start, end;
@@ -326,3 +401,5 @@ int restrictedDFSattack(Graph &G, int s, int f, double &totalTimeCost, vector<do
         }
         return 0;
 }
+
+

@@ -2,6 +2,7 @@
 #include <tfhe/tfhe_io.h>
 
 #include <iostream>
+#include <fstream>
 #include <stdlib.h>
 #include <fcntl.h>
 #include <unistd.h>
@@ -47,6 +48,19 @@ void createNode(struct Graph &G, int nodeNumber, double weight, double impact, d
 	encryptor.encrypt(Prplain,Pn->logPr);
 	encryptor.encrypt(Patchplain,Pn->Patch);
 	encryptor.encrypt(InvPatchplain,Pn->inversePatch);
+/*
+	std::ofstream sizeout("nodeSize.txt", std::ios::app);
+	(Pn->Weight).save(sizeout);
+	(Pn->Impact).save(sizeout);
+	(Pn->Pr).save(sizeout);
+	(Pn->logPr).save(sizeout);
+	(Pn->Patch).save(sizeout);
+	(Pn->inversePatch).save(sizeout);
+	sizeout.close();
+*/
+
+//	cout <<"setting: " <<context->get_context_data((Pn->Pr).parms_id())->chain_index() <<endl;
+
 
 	bootsCONSTANT(Pn->T, (int)isTrue, &(PK->cloud));
 	P.node = Pn;
@@ -176,7 +190,9 @@ void MakeGraph(Graph& G, char *Mat, char *NodeInfo, char *Trait, const TFheGateB
 		p2[len] = '\0';
 		X.pr = atof(p2);
 		X.logPr = log(X.pr);
-		
+	
+//		cout <<X.logPr <<endl;		//change
+
 		len = patch.size();
 		char patch2[len+1];
 		for(int i=0;i<len;i++){

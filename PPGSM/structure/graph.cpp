@@ -1,5 +1,6 @@
 #include "struct.h"
 #include "../function.h"
+#include "../encryption.h"
 #include "../utility/graph_client.h"
 #include <tfhe/tfhe.h>
 #include <tfhe/tfhe_io.h>
@@ -25,17 +26,43 @@
 using namespace std;
 using namespace seal;
 
-static bool operator <(degInfo &a, degInfo &b){
-        return a.Degree < b.Degree;
+static bool operator <(degInfo &a, degInfo &b)
+{
+        return a.NodeNumber < b.NodeNumber;
+}
+//a function that finds a specific node using nodeNumber
+struct nodeList findNode(struct Graph &G, int nodeNumber){
+        list<struct nodeList>::iterator iter;
+        for(iter = G.node->begin(); (*iter).node->NodeNumber != nodeNumber; ++iter);
+        return (*iter);
 }
 
+void delete_graph(struct Graph& G)
+{
+	for(auto N : *(G.node))
+	{
+		struct node* Nn = N.node;
+		for(auto Ne : *(Nn->Neighbors))
+		{
+			delete_gate_bootstrapping_ciphertext(Ne.T);
+		}
+		delete_gate_bootstrapping_ciphertext(Nn->T);
+
+		delete(Nn->Neighbors);
+		delete(Nn);
+	}
+}
 /////////////		functions used in evaluating a graph		////////////////
 
 //find all possible path between source node and destination node with attack cost and risk
 int num = 1;
-
-void probe(struct Graph& G, Ciphertext cost, Ciphertext risk, struct nodeList &N, LweSample* Tmp, vector<int> path, int dest, const TFheGateBootstrappingCloudKeySet* EK, Evaluator &eval, auto &relin_keys, std::shared_ptr<seal::SEALContext> context){
+void probe(struct Graph& G, Ciphertext cost, Ciphertext risk, struct nodeList &N, LweSample* Tmp, vector<int> path, int dest, const TFheGateBootstrappingCloudKeySet* EK, const TFheGateBootstrappingSecretKeySet *PK, Evaluator &eval, auto &relin_keys, std::shared_ptr<seal::SEALContext> context, auto &secret_key){
 	N.visited = true;
+//	std::ofstream out("pathInfo.txt", std::ios::app);
+//	std::ofstream outCost("SEAL.txt",std::ios::app);
+//	std::ofstream outRisk("SEAL2.txt", std::ios::app);
+//	std::ofstream outReal("TFHE.txt",std::ios::app);
+//	cout << N.node->NodeNumber << endl;
 	if(N.node->user == false){
 		//calculate attack cost
 		eval.add_inplace(cost,N.node->Weight);
@@ -51,15 +78,54 @@ void probe(struct Graph& G, Ciphertext cost, Ciphertext risk, struct nodeList &N
 	}
 	path.push_back(N.node->NodeNumber);
 	list<struct Neighbor>::iterator iter;
-        if(N.node->NodeNumber == dest){
-		cout <<"Path " <<num <<"." <<"\t";
+
+
+	if(N.node->NodeNumber == dest){
+	
+//		export_gate_bootstrapping_ciphertext_toStream(outReal, Tmp, EK->params);
+/*
+		cout <<num <<"\t";
 		num++;
-		
+		out <<"path: ";
+		if(out.is_open()){
+			for(auto Path : path){
+				out <<Path <<" ";
+			}
+			out <<", attack cost: ";
+		       	cost.save(out);
+	//		cost.save(outCost);
+			out <<", risk: ";
+			risk.save(out);
+	//		risk.save(outRisk);
+			out <<", real: ";
+			export_gate_bootstrapping_ciphertext_toStream(out, Tmp, EK->params);
+	//		export_gate_bootstrapping_ciphertext_toStream(outReal, Tmp, EK->params);
+			out <<endl <<endl;	
+		}
+*/
+
+/*//////////////////
+		//check a result
 		for(auto P : path)
 		{
-			cout << P+1 << " ";
+			cout << P << " ";
 		}
 		cout << endl;
+		Decryptor decryptor(context, secret_key);
+                CKKSEncoder encoder(context);
+                Plaintext cost_result, risk_result;
+                decryptor.decrypt(cost, cost_result);
+                decryptor.decrypt(risk,risk_result);
+                vector<double> resultCost, resultRisk;
+                encoder.decode(cost_result, resultCost);
+                encoder.decode(risk_result, resultRisk);
+                int real = bootsSymDecrypt(Tmp, PK);
+
+		cout <<"cost: " <<resultCost[0] << endl;
+		cout <<"risk: " <<resultRisk[0] <<endl;
+		cout <<"real: " <<real <<endl;
+*////////////////////
+		return;
         }
         else{
 		for(iter = N.node->Neighbors->begin(); iter != N.node->Neighbors->end(); ++iter){
@@ -68,7 +134,7 @@ void probe(struct Graph& G, Ciphertext cost, Ciphertext risk, struct nodeList &N
 				if((*iter).NodeNumber == (*iter2).node->NodeNumber && (*iter2).visited == false){
 					LweSample *Temp = new_gate_bootstrapping_ciphertext(EK->params);
 					bootsAND(Temp,Tmp,(*iter).T,EK);
-			probe(G, cost, risk, (*iter2), Temp, path, dest, EK, eval, relin_keys, context);
+			probe(G, cost, risk, (*iter2), Temp, path, dest, EK, PK, eval, relin_keys, context, secret_key);
 					(*iter2).visited = false;
 				}
 			}
@@ -78,7 +144,7 @@ void probe(struct Graph& G, Ciphertext cost, Ciphertext risk, struct nodeList &N
 }
 
 //initial function to start probe
-void init_probe(struct Graph& G, int startNumber, int destNumber, const TFheGateBootstrappingCloudKeySet* EK, Evaluator &eval, seal::RelinKeys& relin_keys, seal::PublicKey public_key, std::shared_ptr<seal::SEALContext> context){
+void init_probe(struct Graph& G, int startNumber, int destNumber, const TFheGateBootstrappingCloudKeySet* EK, const TFheGateBootstrappingSecretKeySet *PK, Evaluator &eval, seal::RelinKeys& relin_keys, seal::PublicKey public_key, std::shared_ptr<seal::SEALContext> context, seal::SecretKey secret_key){
 	double scale = pow(2.0,40);
 	CKKSEncoder encoder(context);
 	Plaintext Cost,Risk;
@@ -109,14 +175,20 @@ void init_probe(struct Graph& G, int startNumber, int destNumber, const TFheGate
 		bootsCONSTANT(T, 1, EK);
 		vector<int> path;
 
-		probe(G, cost, risk, inode, T, path, destNumber, EK, eval,relin_keys, context);
+		probe(G, cost, risk, inode, T, path, destNumber, EK, PK, eval,relin_keys, context, secret_key);
 		delete_gate_bootstrapping_ciphertext(T);
 		break;
 	}
 }
 
 //find a length of the shortest path
-void probeMinCut(struct Graph& G, struct nodeList& N, vector<int> path, int &Length, int dest, const TFheGateBootstrappingCloudKeySet* EK){
+void probeMinCut(struct Graph& G, struct nodeList& N, vector<int> path, int &Length, int dest, int &tryCnt, const TFheGateBootstrappingCloudKeySet* EK){
+	tryCnt ++;
+	int gS = G.node->size();
+	if((Length == 1000000) && tryCnt >3000*gS){
+		return;
+	}	
+
 	path.push_back(N.node->NodeNumber);
 	N.visited = true;
 	list<struct Neighbor>::iterator iter;
@@ -135,7 +207,7 @@ void probeMinCut(struct Graph& G, struct nodeList& N, vector<int> path, int &Len
 				list<struct nodeList>::iterator iter2;
 				for(iter2 = G.node->begin(); iter2 != G.node->end(); ++iter2){
 					if((*iter).NodeNumber == (*iter2).node->NodeNumber && (*iter2).visited == false){
-						probeMinCut(G, (*iter2), path, Length, dest, EK);
+						probeMinCut(G, (*iter2), path, Length, dest, tryCnt, EK);
 						(*iter2).visited = false;
 					}
 				}
@@ -147,14 +219,45 @@ void probeMinCut(struct Graph& G, struct nodeList& N, vector<int> path, int &Len
 
 //initial function to start minCut
 int minCut(struct Graph& G, int startNumber, int destNumber, const TFheGateBootstrappingCloudKeySet* EK){
+	int src = startNumber;
+	int dst = destNumber;
+
+	int node_size = G.node->size();
+        int *dist = new int[node_size];
+        for(int i=0; i<node_size; i++)  dist[i] = 1000000;
+
+        vector<int> stack;
+        dist[src] = 1;
+        stack.push_back(src);
+        while(stack.size()>0)
+        {
+                int cur_node = stack[stack.size()-1];
+                stack.pop_back();
+                nodeList n = findNode(G, cur_node);
+                for(auto N : *(n.node->Neighbors))
+                {
+                        int target = N.NodeNumber;
+                        if(dist[cur_node]+1<dist[target])
+                        {
+                                dist[target] = dist[cur_node]+1;
+                                if(target!= dst)        stack.push_back(target);
+                        }
+                }
+        }
+	int value = dist[dst];
+        delete(dist);
+        return value;
+
+	//old version : deprecated
 	int MinLength = 1000000;                //just a large value.
+	int tryCnt = 0;
 	list<struct nodeList>::iterator iter;
 	for(iter = G.node->begin(); iter != G.node->end(); ++iter){
 		(*iter).visited = false;
 	}
 	for(iter = G.node->begin(); (*iter).node->NodeNumber != startNumber; ++iter);
 	vector<int> P;
-	probeMinCut(G, *iter, P, MinLength, destNumber, EK);
+	probeMinCut(G, *iter, P, MinLength, destNumber, tryCnt, EK);
 	return MinLength;
 }
 
@@ -201,6 +304,7 @@ int minLength(struct Graph& G, int startNumber, int destNumber, const TFheGateBo
 void probeShortestPath(struct Graph& G, Ciphertext cost, Ciphertext risk, struct nodeList &N, LweSample* Tmp, vector<int> path, int dest, int shortestLength, double mpl, const TFheGateBootstrappingCloudKeySet* EK, Evaluator &eval, auto &relin_keys, std::shared_ptr<seal::SEALContext> context){
 	N.visited = true;
 //	std::ofstream out("mplInfo.txt", std::ios::app);
+//	cout << N.node->NodeNumber << endl;
 	if(N.node->user == false){
 		//calculate attack cost
 		eval.add_inplace(cost,N.node->Weight);
@@ -290,6 +394,7 @@ void init_probeShortestPath(struct Graph& G, int startNumber, int destNumber, in
 //find a value of mean path length
 void probeMpl(struct Graph& G, struct nodeList& N, vector<int> path, int* routeNumber, int* totalHop, int dest, const TFheGateBootstrappingCloudKeySet* EK){
 	path.push_back(N.node->NodeNumber);
+//	printf("Node Number : %d\n",N.node->NodeNumber);
 	N.visited = true;
 	list<struct Neighbor>::iterator iter;
 	if(N.node->NodeNumber == dest){
@@ -323,10 +428,10 @@ void mpl(struct Graph& G, int startNumber, int destNumber, const TFheGateBootstr
 	double result = (double)totalHop / (double)routeNumber;
 	cout <<"pathNum: " <<routeNumber <<endl;
 	cout <<"totalHop: " <<totalHop <<endl;
-	cout <<"MPL: " <<result <<endl;
+	cout <<"MPL: " <<result <<"\t\t";
 
-	int shortestLength = minLength(G, startNumber, destNumber, EK);
-	init_probeShortestPath(G, startNumber, destNumber, shortestLength, result, EK, eval, relin_keys, public_key, context);	
+	//int shortestLength = minLength(G, startNumber, destNumber, EK);
+	//init_probeShortestPath(G, startNumber, destNumber, shortestLength, result, EK, eval, relin_keys, public_key, context);	
 	return;
 }
 
@@ -364,13 +469,6 @@ struct degree getDegree(struct Graph& G){
 		V.Vin.push_back(Din);
 	}
 	return V;
-}
-
-//a function that finds a specific node using nodeNumber
-struct nodeList findNode(struct Graph &G, int nodeNumber){
-	list<struct nodeList>::iterator iter;
-	for(iter = G.node->begin(); (*iter).node->NodeNumber != nodeNumber; ++iter);
-	return (*iter);
 }
 
 //get total degree(in-degree + out-degree) of each node
@@ -423,7 +521,7 @@ void prune(struct Graph &G, struct degree &V, int number){
 		Vi.push_back(Lm);
 	}
 	sort(Vi.begin(), Vi.end());
-		
+	
 	vector<int> Vt;
 	for(int i = 0; i < L; i++){
 		if(Vi[i].NodeNumber == 0 || Vi[i].NodeNumber == G.node->size()-1){
@@ -438,14 +536,21 @@ void prune(struct Graph &G, struct degree &V, int number){
 			break;
 		}
 	}
+/*
+	for(int i=0;i<number;i++){
+		cout <<Vt[i] <<"\t";
+	}
+*/
 	list<struct nodeList>::iterator iter;
 	for(list<nodeList>::iterator N = G.node->begin(); N != G.node->end(); ++N){
 		int lenVt = Vt.size();
+	//	printf("Current node : %d\n",(*N).node->NodeNumber);
 		
 		// Deleting edges.
 		for(list<Neighbor>::iterator Nn = (*N).node->Neighbors->begin();Nn != (*N).node->Neighbors->end(); ++Nn){
 			for(auto e : Vt){
 				if(e == Nn->NodeNumber){
+	//				printf("Edge to delete : -> %d\n",Nn->NodeNumber);
 					(*N).node->Neighbors->erase(Nn++);
 					if(Nn == (*N).node->Neighbors->end())   break;
 				}
@@ -456,7 +561,7 @@ void prune(struct Graph &G, struct degree &V, int number){
 		//Deleting nodes.
 		for(auto e : Vt){
 			if(e == (*N).node->NodeNumber){
-				printf("Node to delete : node number %d\n",((*N).node->NodeNumber) + 1);
+	//			printf("Node to delete : -> %d\n",(*N).node->NodeNumber);
 				G.node->erase(N++);
 				if(N == G.node->end())   return;
 			}
@@ -465,6 +570,7 @@ void prune(struct Graph &G, struct degree &V, int number){
 }
 
 void PrAtkSuccessProbe(struct Graph& G, Ciphertext &result, Ciphertext &base, Ciphertext logpr, struct nodeList& N, LweSample* Tmp, vector<int> path, vector<Ciphertext> &pathPr, int dest, const TFheGateBootstrappingCloudKeySet* EK, Evaluator &eval, seal::RelinKeys &relin_keys, std::shared_ptr<seal::SEALContext> context, seal::SecretKey secret_key){
+//	cout << N.node->NodeNumber << endl;
 //	std::ofstream out("probabilityInfo.txt", std::ios::app);
 	if(N.node->user == false){
 		eval.add_inplace(logpr,N.node->logPr);
@@ -488,6 +594,14 @@ void PrAtkSuccessProbe(struct Graph& G, Ciphertext &result, Ciphertext &base, Ci
 		out <<endl;
 */
 
+/*
+		//check probability value
+		cout <<"path: ";
+                for(auto P : path){
+                        cout << P << " ";
+                }
+		cout <<endl;
+*/
 		CKKSEncoder encoder(context);	
 		Decryptor decryptor(context, secret_key);
 		Plaintext plain_result;
@@ -495,7 +609,7 @@ void PrAtkSuccessProbe(struct Graph& G, Ciphertext &result, Ciphertext &base, Ci
 		vector<double> result;
 		encoder.decode(plain_result, result);
 //		cout << "logPr: " <<result[0] <<endl;
-
+		return;
 	}
 	else{
 		for(iter = N.node->Neighbors->begin(); iter != N.node->Neighbors->end(); ++iter){
@@ -560,26 +674,43 @@ void PrAtkSuccess(struct Graph& G, int startNumber, int destNumber, const TFheGa
         	        decryptor.decrypt(pathPr[i], plain_result1);
                 	vector<double> RST1;
 	                encoder.decode(plain_result1, RST1);
-	                cout <<"log(pr): " <<RST1[0] <<endl;
+//	                cout <<"log(pr): " <<RST1[0] <<endl;
 
-			Plaintext Temp0,Temp1,Temp2,Temp3,Temp4;
+			Plaintext Temp0,Temp1,Temp2,Temp3,Temp4, Temp5, Temp6, Temp7, Temp8, Temp9, Temp10;
 			encoder.encode(1, scale, Temp0);
 			encoder.encode(1, scale, Temp1);
 			encoder.encode(0.5, scale, Temp2);
-			encoder.encode(0.16666, scale, Temp3);
-			encoder.encode(0.041666, scale, Temp4);
-			Ciphertext temp0, temp1, temp2, temp3, temp4, temp;
-			encryptor.encrypt(Temp0,temp0);
+			encoder.encode(0.1666, scale, Temp3);
+			encoder.encode(0.04166, scale, Temp4);
+			encoder.encode(0.00833, scale, Temp5);
+			encoder.encode(0.001388, scale, Temp6);
+			encoder.encode(0.0001984, scale, Temp7);
+			encoder.encode(0.0000248, scale, Temp8);
+			encoder.encode(0.00000276, scale, Temp9);
+			encoder.encode(0.000000276, scale, Temp10);
+			Ciphertext temp0, temp1, temp2, temp3, temp4, temp5, temp6, temp7, temp8, temp9, temp10, temp, temp_a, temp_b;
+			encryptor.encrypt(Temp0, temp0);
 			encryptor.encrypt(Temp1, temp1);
 			encryptor.encrypt(Temp2, temp2);
 			encryptor.encrypt(Temp3, temp3);
 			encryptor.encrypt(Temp4, temp4);
+			encryptor.encrypt(Temp5, temp5);
+			encryptor.encrypt(Temp6, temp6);
+			encryptor.encrypt(Temp7, temp7);
+			encryptor.encrypt(Temp8, temp8);
+			encryptor.encrypt(Temp9, temp9);
+			encryptor.encrypt(Temp10, temp10);
 
+//			cout <<"coeff: " <<context->get_context_data(temp1.parms_id())->chain_index() <<endl;
+//			cout <<"initial: " <<context->get_context_data(pathPr[1].parms_id())->chain_index() <<endl;
+
+			//1st term
 			eval.multiply_inplace(temp1, pathPr[i]);
 			eval.relinearize_inplace(temp1, relin_keys);
 			eval.rescale_to_next_inplace(temp1);
 			temp1.scale() = pow(2.0,40);
 
+			//2nd term
 			eval.square(pathPr[i], temp);
 			eval.relinearize_inplace(temp, relin_keys);
 			eval.rescale_to_next_inplace(temp);
@@ -592,51 +723,209 @@ void PrAtkSuccess(struct Graph& G, int startNumber, int destNumber, const TFheGa
 			eval.rescale_to_next_inplace(temp2);
 			temp2.scale() = pow(2.0,40);
 
+			//3rd term
 			eval.multiply_inplace(temp3, pathPr[i]);
 			eval.relinearize_inplace(temp3, relin_keys);
 			eval.rescale_to_next_inplace(temp3);
 			temp3.scale() = pow(2.0,40);
+			
 			eval.multiply_inplace(temp3, temp);
 			eval.relinearize_inplace(temp3, relin_keys);
 			eval.rescale_to_next_inplace(temp3);
 			temp3.scale() = pow(2.0,40);
 
-			last_parms_id = temp3.parms_id();
+			//4th term
+			eval.square(temp, temp_a);
+			eval.relinearize_inplace(temp_a, relin_keys);
+                        eval.rescale_to_next_inplace(temp_a);
+
+			last_parms_id = temp_a.parms_id();
+                        temp_a.scale() = pow(2.0,40);
+                        eval.mod_switch_to_inplace(temp4, last_parms_id);
+                        eval.multiply_inplace(temp4, temp_a);
+                        eval.relinearize_inplace(temp4, relin_keys);
+                        eval.rescale_to_next_inplace(temp4);
+                        temp4.scale() = pow(2.0,40);
+
+			//5th term
+			eval.multiply_inplace(temp5, pathPr[i]);
+			eval.relinearize_inplace(temp5, relin_keys);
+                        eval.rescale_to_next_inplace(temp5);
+                        temp5.scale() = pow(2.0,40);
+
+			eval.mod_switch_to_inplace(temp5, last_parms_id);
+                        eval.multiply_inplace(temp5, temp_a);
+                        eval.relinearize_inplace(temp5, relin_keys);
+                        eval.rescale_to_next_inplace(temp5);
+                        temp5.scale() = pow(2.0,40);
+
+			//6th term
+			last_parms_id = temp.parms_id();
+                        temp.scale() = pow(2.0,40);
+                        eval.mod_switch_to_inplace(temp6, last_parms_id);
+                        eval.multiply_inplace(temp6, temp);
+                        eval.relinearize_inplace(temp6, relin_keys);
+                        eval.rescale_to_next_inplace(temp6);
+                        temp6.scale() = pow(2.0,40);
+
+			last_parms_id = temp_a.parms_id();
+                        temp_a.scale() = pow(2.0,40);
+                        eval.mod_switch_to_inplace(temp6, last_parms_id);
+                        eval.multiply_inplace(temp6, temp_a);
+                        eval.relinearize_inplace(temp6, relin_keys);
+                        eval.rescale_to_next_inplace(temp6);
+                        temp6.scale() = pow(2.0,40);
+
+			//7th term
+			eval.multiply_inplace(temp7, pathPr[i]);
+                        eval.relinearize_inplace(temp7, relin_keys);
+                        eval.rescale_to_next_inplace(temp7);
+                        temp7.scale() = pow(2.0,40);
+
+			last_parms_id = temp.parms_id();
+                        temp.scale() = pow(2.0,40);
+                        eval.mod_switch_to_inplace(temp7, last_parms_id);
+                        eval.multiply_inplace(temp7, temp);
+                        eval.relinearize_inplace(temp7, relin_keys);
+                        eval.rescale_to_next_inplace(temp7);
+                        temp7.scale() = pow(2.0,40);
+
+                        last_parms_id = temp_a.parms_id();
+                        temp_a.scale() = pow(2.0,40);
+                        eval.mod_switch_to_inplace(temp7, last_parms_id);
+                        eval.multiply_inplace(temp7, temp_a);
+                        eval.relinearize_inplace(temp7, relin_keys);
+                        eval.rescale_to_next_inplace(temp7);
+                        temp7.scale() = pow(2.0,40);
+
+			//8th term
+			eval.square(temp_a, temp_b);
+                        eval.relinearize_inplace(temp_b, relin_keys);
+                        eval.rescale_to_next_inplace(temp_b);
+
+                        last_parms_id = temp_b.parms_id();
+                        temp_b.scale() = pow(2.0,40);
+                        eval.mod_switch_to_inplace(temp8, last_parms_id);
+                        eval.multiply_inplace(temp8, temp_b);
+                        eval.relinearize_inplace(temp8, relin_keys);
+                        eval.rescale_to_next_inplace(temp8);
+                        temp8.scale() = pow(2.0,40);
+
+			//9th term
+			eval.multiply_inplace(temp9, pathPr[i]);
+                        eval.relinearize_inplace(temp9, relin_keys);
+                        eval.rescale_to_next_inplace(temp9);
+                        temp9.scale() = pow(2.0,40);
+
+			eval.mod_switch_to_inplace(temp9, last_parms_id);
+                        eval.multiply_inplace(temp9, temp_b);
+                        eval.relinearize_inplace(temp9, relin_keys);
+                        eval.rescale_to_next_inplace(temp9);
+                        temp9.scale() = pow(2.0,40);
+
+			//10th term
+			last_parms_id = temp.parms_id();
+                        temp.scale() = pow(2.0,40);
+                        eval.mod_switch_to_inplace(temp10, last_parms_id);
+                        eval.multiply_inplace(temp10, temp);
+                        eval.relinearize_inplace(temp10, relin_keys);
+                        eval.rescale_to_next_inplace(temp10);
+                        temp10.scale() = pow(2.0,40);
+
+			last_parms_id = temp_b.parms_id();
+                        temp_b.scale() = pow(2.0,40);
+                        eval.mod_switch_to_inplace(temp10, last_parms_id);
+                        eval.multiply_inplace(temp10, temp_b);
+                        eval.relinearize_inplace(temp10, relin_keys);
+                        eval.rescale_to_next_inplace(temp10);
+                        temp10.scale() = pow(2.0,40);
+
+
+			last_parms_id = temp10.parms_id();
 			eval.mod_switch_to_inplace(temp0, last_parms_id);
 			eval.mod_switch_to_inplace(temp1, last_parms_id);
 			eval.mod_switch_to_inplace(temp2, last_parms_id);
+			eval.mod_switch_to_inplace(temp3, last_parms_id);
+			eval.mod_switch_to_inplace(temp4, last_parms_id);
+			eval.mod_switch_to_inplace(temp5, last_parms_id);
+			eval.mod_switch_to_inplace(temp6, last_parms_id);
+			eval.mod_switch_to_inplace(temp7, last_parms_id);
+			eval.mod_switch_to_inplace(temp8, last_parms_id);
+			eval.mod_switch_to_inplace(temp9, last_parms_id);
 
 			eval.add_inplace(temp0, temp1);
 			eval.add_inplace(temp0, temp2);
 			eval.add_inplace(temp0, temp3);
+			eval.add_inplace(temp0, temp4);
+			eval.add_inplace(temp0, temp5);
+			eval.add_inplace(temp0, temp6);
+			eval.add_inplace(temp0, temp7);
+			eval.add_inplace(temp0, temp8);
+			eval.add_inplace(temp0, temp9);
+			eval.add_inplace(temp0, temp10);
 
 			//test
 			Plaintext plain_result2;
 	                decryptor.decrypt(temp0, plain_result2);
         	        vector<double> result2;
                 	encoder.decode(plain_result2, result2);
-	                cout << "pr: " <<result2[0] <<endl;
-		
-			Plaintext testTemp1,testTemp2,testTemp3;
-                        encoder.encode(1, scale, testTemp1);
-                        encoder.encode(0.5, scale, testTemp2);
-                        encoder.encode(0.333333, scale, testTemp3);
-                        Ciphertext secondtemp1, secondtemp2, secondtemp3, secondtemp;
-			encryptor.encrypt(testTemp1, secondtemp1);
-                        encryptor.encrypt(testTemp2, secondtemp2);
-                        encryptor.encrypt(testTemp3, secondtemp3);
+//	                cout << "pr: " <<result2[0] <<endl;
+	
 
+	//secong appproximation
+			Plaintext secondTemp1, secondTemp2, secondTemp3, secondTemp4, secondTemp5, secondTemp6, secondTemp7, secondTemp8, secondTemp9, secondTemp10;
+                        encoder.encode(-1, scale, secondTemp1);
+                        encoder.encode(-0.5, scale, secondTemp2);
+                        encoder.encode(-0.333333, scale, secondTemp3);
+			encoder.encode(-0.25, scale, secondTemp4);
+			encoder.encode(-0.2, scale, secondTemp5);
+			encoder.encode(-0.16666, scale, secondTemp6);
+			encoder.encode(-0.1428, scale, secondTemp7);
+			encoder.encode(-0.125, scale, secondTemp8);
+			encoder.encode(-0.1111, scale, secondTemp9);
+			encoder.encode(-0.1, scale, secondTemp10);
+
+                        Ciphertext secondtemp1, secondtemp2, secondtemp3, secondtemp4, secondtemp5, secondtemp6, secondtemp7, secondtemp8, secondtemp9, secondtemp10, secondtemp, secondtemp_a, secondtemp_b;
+
+			encryptor.encrypt(secondTemp1, secondtemp1);
+                        encryptor.encrypt(secondTemp2, secondtemp2);
+                        encryptor.encrypt(secondTemp3, secondtemp3);
+			encryptor.encrypt(secondTemp4, secondtemp4);
+			encryptor.encrypt(secondTemp5, secondtemp5);
+			encryptor.encrypt(secondTemp6, secondtemp6);
+			encryptor.encrypt(secondTemp7, secondtemp7);
+			encryptor.encrypt(secondTemp8, secondtemp8);
+			encryptor.encrypt(secondTemp9, secondtemp9);
+			encryptor.encrypt(secondTemp10, secondtemp10);
+
+			//mult x
 			eval.mod_switch_to_inplace(secondtemp1, last_parms_id);
 			eval.mod_switch_to_inplace(secondtemp3, last_parms_id);
+			eval.mod_switch_to_inplace(secondtemp5, last_parms_id);
+			eval.mod_switch_to_inplace(secondtemp7, last_parms_id);
+			eval.mod_switch_to_inplace(secondtemp9, last_parms_id);
 			eval.multiply_inplace(secondtemp1, temp0);
 			eval.multiply_inplace(secondtemp3, temp0);
+			eval.multiply_inplace(secondtemp5, temp0);
+			eval.multiply_inplace(secondtemp7, temp0);
+			eval.multiply_inplace(secondtemp9, temp0);
 			eval.relinearize_inplace(secondtemp1, relin_keys);
 			eval.relinearize_inplace(secondtemp3, relin_keys);
+			eval.relinearize_inplace(secondtemp5, relin_keys);
+			eval.relinearize_inplace(secondtemp7, relin_keys);
+			eval.relinearize_inplace(secondtemp9, relin_keys);
 			eval.rescale_to_next_inplace(secondtemp1);
 			eval.rescale_to_next_inplace(secondtemp3);
+			eval.rescale_to_next_inplace(secondtemp5);
+			eval.rescale_to_next_inplace(secondtemp7);
+			eval.rescale_to_next_inplace(secondtemp8);
 			secondtemp1.scale() = pow(2.0,40);
 			secondtemp3.scale() = pow(2.0,40);
+			secondtemp5.scale() = pow(2.0,40);
+			secondtemp7.scale() = pow(2.0,40);
+			secondtemp9.scale() = pow(2.0,40);
 
+			//mult x^2
 			eval.square(temp0, secondtemp);
 			eval.relinearize_inplace(secondtemp, relin_keys);
 			eval.rescale_to_next_inplace(secondtemp);
@@ -644,20 +933,104 @@ void PrAtkSuccess(struct Graph& G, int startNumber, int destNumber, const TFheGa
 			last_parms_id = secondtemp.parms_id();
                         eval.mod_switch_to_inplace(secondtemp2, last_parms_id);
                         eval.mod_switch_to_inplace(secondtemp3, last_parms_id);
-
+			eval.mod_switch_to_inplace(secondtemp6, last_parms_id);
+			eval.mod_switch_to_inplace(secondtemp7, last_parms_id);
+			eval.mod_switch_to_inplace(secondtemp10, last_parms_id);
 			eval.multiply_inplace(secondtemp2, secondtemp);
 			eval.multiply_inplace(secondtemp3, secondtemp);
+			eval.multiply_inplace(secondtemp6, secondtemp);
+			eval.multiply_inplace(secondtemp7, secondtemp);
+			eval.multiply_inplace(secondtemp10, secondtemp);
 			eval.relinearize_inplace(secondtemp2, relin_keys);
 			eval.relinearize_inplace(secondtemp3, relin_keys);
+			eval.relinearize_inplace(secondtemp6, relin_keys);
+			eval.relinearize_inplace(secondtemp7, relin_keys);
+			eval.relinearize_inplace(secondtemp10, relin_keys);
 			eval.rescale_to_next_inplace(secondtemp2);
 			eval.rescale_to_next_inplace(secondtemp3);
+			eval.rescale_to_next_inplace(secondtemp6);
+			eval.rescale_to_next_inplace(secondtemp7);
+			eval.rescale_to_next_inplace(secondtemp10);
 			secondtemp2.scale() = pow(2.0,40);
 			secondtemp3.scale() = pow(2.0,40);
+			secondtemp6.scale() = pow(2.0,40);
+			secondtemp7.scale() = pow(2.0,40);
+			secondtemp10.scale() = pow(2.0,40);
 
-			last_parms_id = secondtemp3.parms_id();
+			//mult x^4
+			eval.square(secondtemp, secondtemp_a);
+                        eval.relinearize_inplace(secondtemp_a, relin_keys);
+                        eval.rescale_to_next_inplace(secondtemp_a);
+                        secondtemp_a.scale() = pow(2.0, 40);
+                        last_parms_id = secondtemp_a.parms_id();
+                        eval.mod_switch_to_inplace(secondtemp4, last_parms_id);
+                        eval.mod_switch_to_inplace(secondtemp5, last_parms_id);
+                        eval.mod_switch_to_inplace(secondtemp6, last_parms_id);
+                        eval.mod_switch_to_inplace(secondtemp7, last_parms_id);
+                       
+			//cout <<"temp7: " << context->get_context_data(secondtemp7.parms_id())->chain_index() <<endl;
+
+			eval.multiply_inplace(secondtemp4, secondtemp_a);
+                        eval.multiply_inplace(secondtemp5, secondtemp_a);
+                        eval.multiply_inplace(secondtemp6, secondtemp_a);
+                        eval.multiply_inplace(secondtemp7, secondtemp_a);
+
+			eval.relinearize_inplace(secondtemp4, relin_keys);
+                        eval.relinearize_inplace(secondtemp5, relin_keys);
+                        eval.relinearize_inplace(secondtemp6, relin_keys);
+                        eval.relinearize_inplace(secondtemp7, relin_keys);
+                        eval.rescale_to_next_inplace(secondtemp4);
+                        eval.rescale_to_next_inplace(secondtemp5);
+                        eval.rescale_to_next_inplace(secondtemp6);
+                        eval.rescale_to_next_inplace(secondtemp7);
+                        secondtemp4.scale() = pow(2.0,40);
+                        secondtemp5.scale() = pow(2.0,40);
+                        secondtemp6.scale() = pow(2.0,40);
+                        secondtemp7.scale() = pow(2.0,40);
+
+
+			//mult x^8
+			eval.square(secondtemp_a, secondtemp_b);
+                        eval.relinearize_inplace(secondtemp_b, relin_keys);
+                        eval.rescale_to_next_inplace(secondtemp_b);
+                        secondtemp_b.scale() = pow(2.0, 40);
+                        last_parms_id = secondtemp_b.parms_id();
+                        eval.mod_switch_to_inplace(secondtemp8, last_parms_id);
+                        eval.mod_switch_to_inplace(secondtemp9, last_parms_id);
+                        eval.mod_switch_to_inplace(secondtemp10, last_parms_id);
+                        eval.multiply_inplace(secondtemp8, secondtemp_b);
+                        eval.multiply_inplace(secondtemp9, secondtemp_b);
+                        eval.multiply_inplace(secondtemp10, secondtemp_b);
+                        eval.relinearize_inplace(secondtemp8, relin_keys);
+                        eval.relinearize_inplace(secondtemp9, relin_keys);
+                        eval.relinearize_inplace(secondtemp10, relin_keys);
+                        eval.rescale_to_next_inplace(secondtemp8);
+                        eval.rescale_to_next_inplace(secondtemp9);
+                        eval.rescale_to_next_inplace(secondtemp10);
+                        secondtemp8.scale() = pow(2.0,40);
+                        secondtemp9.scale() = pow(2.0,40);
+                        secondtemp10.scale() = pow(2.0,40);
+			
+			//add all
+			last_parms_id = secondtemp10.parms_id();
 			eval.mod_switch_to_inplace(secondtemp1, last_parms_id);
+			eval.mod_switch_to_inplace(secondtemp2, last_parms_id);
+			eval.mod_switch_to_inplace(secondtemp3, last_parms_id);
+			eval.mod_switch_to_inplace(secondtemp4, last_parms_id);
+			eval.mod_switch_to_inplace(secondtemp5, last_parms_id);
+			eval.mod_switch_to_inplace(secondtemp6, last_parms_id);
+			eval.mod_switch_to_inplace(secondtemp7, last_parms_id);
+			eval.mod_switch_to_inplace(secondtemp8, last_parms_id);
+			eval.mod_switch_to_inplace(secondtemp9, last_parms_id);
 			eval.add_inplace(secondtemp1, secondtemp2);
 			eval.add_inplace(secondtemp1, secondtemp3);
+			eval.add_inplace(secondtemp1, secondtemp4);
+			eval.add_inplace(secondtemp1, secondtemp5);
+			eval.add_inplace(secondtemp1, secondtemp6);
+			eval.add_inplace(secondtemp1, secondtemp7);
+			eval.add_inplace(secondtemp1, secondtemp8);
+			eval.add_inplace(secondtemp1, secondtemp9);
+			eval.add_inplace(secondtemp1, secondtemp10);
 
 			//test
                         Plaintext plain_result3;
@@ -675,7 +1048,7 @@ void PrAtkSuccess(struct Graph& G, int startNumber, int destNumber, const TFheGa
                         decryptor.decrypt(finalResult, plain_result0);
                         vector<double> result0;
                         encoder.decode(plain_result0, result0);
-                      cout << "result: " <<result0[0] <<endl;
+                        cout << "result: " <<result0[0] <<endl;
 
 		delete_gate_bootstrapping_ciphertext(T);
 		break;
@@ -700,7 +1073,9 @@ void levelUpSEAL(Ciphertext &pr, Evaluator &eval, seal::PublicKey public_key, se
 	encryptor.encrypt(temp_result, pr);
 }
 
-void cumulPrAtkSuccessProbe(struct Graph& G, struct nodeList& N, vector<int> &inDegree, queue<int> &searchList, vector<Ciphertext> &tempNodePr, vector<Ciphertext> &finalNodePr, int source, Evaluator &eval, seal::PublicKey public_key, seal::RelinKeys &relin_keys, std::shared_ptr<seal::SEALContext> context, seal::SecretKey secret_key){	
+void cumulPrAtkSuccessProbe(struct Graph& G, struct nodeList& N, vector<int> &inDegree, queue<int> &searchList, vector<Ciphertext> &tempNodePr, vector<Ciphertext> &finalNodePr, int source, Evaluator &eval, seal::PublicKey public_key, seal::RelinKeys &relin_keys, std::shared_ptr<seal::SEALContext> context, seal::SecretKey secret_key){
+	
+//TODO	
 	int graphSize = G.node->size();
         CKKSEncoder encoder(context);
         double scale = pow(2.0,40);
@@ -869,7 +1244,7 @@ void diffRiskreturnOnInvestment(struct Graph &G, Ciphertext risk, struct nodeLis
 }
 
 //function to calculate return on investment
-void returnInvestment(struct Graph& G, int startNumber, int destNumber, const TFheGateBootstrappingCloudKeySet* EK, const TFheGateBootstrappingSecretKeySet *PK, Evaluator &eval, seal::RelinKeys& relin_keys, seal::PublicKey public_key, std::shared_ptr<seal::SEALContext> context, seal::SecretKey secret_key){
+void returnInvestment(struct Graph& G, int startNumber, int destNumber, int target, const TFheGateBootstrappingCloudKeySet* EK, const TFheGateBootstrappingSecretKeySet *PK, Evaluator &eval, seal::RelinKeys& relin_keys, seal::PublicKey public_key, std::shared_ptr<seal::SEALContext> context, seal::SecretKey secret_key){
 	int graphSize = G.node->size();
 	double scale = pow(2.0,40);
 	CKKSEncoder encoder(context);
@@ -903,6 +1278,7 @@ void returnInvestment(struct Graph& G, int startNumber, int destNumber, const TF
 //		delete_gate_bootstrapping_ciphertext(T);
 		
 		for(int i=0;i<graphSize;i++){
+			if(i == target){
 			struct nodeList targetNode;
 			targetNode = findNode(G,i);
 			parms_id_type last_parms_id = diffRisk[i].parms_id();
@@ -918,7 +1294,7 @@ void returnInvestment(struct Graph& G, int startNumber, int destNumber, const TF
 					diffRisk[i].save(out);
 					out <<endl;
 				}
-/*
+
                 	//check result        
 			if(targetNode.node->user == false){
 				Decryptor decryptor(context, secret_key);
@@ -928,7 +1304,8 @@ void returnInvestment(struct Graph& G, int startNumber, int destNumber, const TF
 				encoder.decode(result_plaintext, resultInvest);
 					cout <<"Node " <<i <<": " <<resultInvest[0] <<endl;
 			}
-*/
+			}
+
 		}
 		break;
 	}
@@ -993,12 +1370,7 @@ vector<double> closeness(Graph& G, const TFheGateBootstrappingCloudKeySet* EK)
 				}
 			}
 		}
-		if(S==0){
-			ret.push_back(0);
-		}
-		else{
-			ret.push_back((double)(n-1)/(double)S);
-		}
+		ret.push_back((double)(n-1)/(double)S);
 	}
 	return ret;
 }
@@ -1265,9 +1637,21 @@ void addRandomlyOnlyEdges(struct Graph& G, int dummyEdgesNum, const TFheGateBoot
 	//just add edges, nodes randomly in graph
 void addRandomlyEdgesNodes(struct Graph& G, int dummyNodesNum, int graphSize, const TFheGateBootstrappingCloudKeySet* EK, const TFheGateBootstrappingSecretKeySet *PK, seal::PublicKey public_key, std::shared_ptr<seal::SEALContext> context){
 	for(int i=0; i<dummyNodesNum; i++){
-		createDummyNode(G, 10, 10, 0.2, -0.096, 1, 1, PK,public_key,context);
+		double avgDeg=0;
+		double gS = G.node->size();
+		struct degree nodeDegree = getDegree(G);
+		vector<struct degInfo> Vin = nodeDegree.Vin;
+		for(int i=0;i<gS;i++){
+			avgDeg += Vin[i].Degree;
+		}
+		avgDeg = avgDeg / (double)gS;
+
+//		cout <<"Average Degree: " <<avgDeg <<endl;
+
+		createDummyNode(G, 10, 10, 0.0, -1000.0, 1, 1, PK, public_key,context);
 		int s = G.node->size();
-		for(int a=0;a<1;a++){
+		for(int a=0;a<avgDeg;a++){
+//		for(int a=0;a<1;a++){
 			int from = rand() % graphSize;
 			bool exist = false;
 	                struct nodeList startNode = findNode(G, from);
@@ -1310,26 +1694,29 @@ vector<double> BetweennessCentrality(Graph& G, const TFheGateBootstrappingCloudK
                         if(i != j && i == source && j==dest)
                         {
                                 int RouteNumber = 0;
-                                int minLength = minCut(G, i, j, EK);
-
-                                std::list<struct nodeList>::iterator iter;
-                                for(iter = G.node->begin(); (*iter).node->NodeNumber != i; ++iter);
-
-                                vector<vector<int>> T;
-                                vector<int> t;
-                                extract(G, &T, (*iter), minLength, t, j, EK);
-
-                                int Tsize = T.size();
-        			pathNum += Tsize;
-				for(int k = 0; k < Tsize; k++)
-                                {
-                                        int Lsize = T[k].size();
-                                        for(int l = 0; l < Lsize-1; l++)
-                                        {
-                                                Table[T[k][l]] += (double)1.0f/(double)Tsize;
-                                        }
-                                }
-                        }
+				//cout <<"test1 - source: " <<i <<", destination: " <<j <<endl;
+				int minLength = minCut(G, i, j, EK);
+				if(minLength != 1000000){
+					//cout <<"test2" <<endl;
+	                                std::list<struct nodeList>::iterator iter;
+	                                for(iter = G.node->begin(); (*iter).node->NodeNumber != i; ++iter);
+	
+	                                vector<vector<int>> T;
+	                                vector<int> t;
+	                                extract(G, &T, (*iter), minLength, t, j, EK);
+	
+	                                int Tsize = T.size();
+	        			pathNum += Tsize;
+					for(int k = 0; k < Tsize; k++)
+	                                {
+	                                        int Lsize = T[k].size();
+	                                        for(int l = 0; l < Lsize-1; l++)
+	                                        {
+	                                                Table[T[k][l]] += (double)1.0f/(double)Tsize;
+	                                        }
+					}
+				}
+			}
                 }
         }
         vector<double> ret;
@@ -1349,7 +1736,7 @@ vector<double> BetweennessCentrality(Graph& G, const TFheGateBootstrappingCloudK
 }
 
 
-vector<double> allPathBetweennessCentrality(Graph& G, const TFheGateBootstrappingCloudKeySet* EK,int source, int dest){
+vector<double> allPathBetweennessCentrality(Graph& G, const TFheGateBootstrappingCloudKeySet* EK, int source, int dest){
         int gs = G.node->size();
         double Table[gs];
         int totalPathNum = 0;
@@ -1687,18 +2074,31 @@ void heuristicAddNodes(struct Graph &G, int destinationNode, int dummyNode, vect
 //	cout <<index <<", " <<startNodeSet.size() <<endl;
 
 	for(int i=0;i<dummyNode;i++){
+		double avgDeg=0;
+		double gS = G.node->size();
+                struct degree nodeDegree = getDegree(G);
+                vector<struct degInfo> Vin = nodeDegree.Vin;
+                for(int i=0;i<gS;i++){
+                        avgDeg += Vin[i].Degree;
+                }
+                avgDeg = avgDeg / (double)gS;
+
+//                cout <<"Average Degree: " <<avgDeg <<endl;
+
 		int sz = startNodeSet.size();
 		int ran = rand() % sz;
 		int startNodeNumber = startNodeSet[ran];
 	
 	//	cout <<"start node: " <<startNodeNumber <<endl;
 	
-		createDummyNode(G, 10, 10, 0.2, -0.096, 1, 1, PK, public_key, context);
-	
+		createDummyNode(G, 10, 10, 0.0, -1000.0, 1, 1, PK, public_key, context);
+
+		for(int a=0;a<avgDeg;a++){	
 	//	cout <<G.node->size()-1 <<endl;
-		createDummyEdge(G, startNodeNumber, G.node->size()-1, true, EK);
-		createDummyEdge(G, G.node->size()-1, startNodeNumber, true, EK);
-//		cout <<"added edge: " <<startNodeNumber  <<"--" <<G.node->size()-1 <<endl;
+			createDummyEdge(G, temp[a].first, G.node->size()-1, true, EK);
+			createDummyEdge(G, G.node->size()-1, temp[a].first, true, EK);
+//		cout <<"added edge: " <<temp[a].first  <<"--" <<G.node->size()-1 <<endl;
+		}
 	}
 }
 
@@ -1811,9 +2211,212 @@ void heuristicAddNodes2(struct Graph &G, int destinationNode, int dummyNode, vec
 //	int ran = rand() % sz;
 //	int startNodeNumber = startNodeSet[ran];
         for(int i=0;i<dummyNode;i++){
-		createDummyNode(G, 10, 10, 0.2, -0.096, 1, 1, PK, public_key, context);
+		createDummyNode(G, 10, 10, 0.0, -1000.0, 1, 1, PK, public_key, context);
 		createDummyEdge(G, temp[i].first, G.node->size()-1, true, EK);
 		createDummyEdge(G, G.node->size()-1, temp[i].first, true, EK);
 //		cout <<"added edge: " <<temp[i].first <<"-----" <<G.node->size()-1 <<endl;
 	}
+}
+
+void heuristicAddNodesDB(struct Graph &G, int destinationNode, int dummyNode, vector<struct degInfo> Vin, const TFheGateBootstrappingCloudKeySet* EK, const TFheGateBootstrappingSecretKeySet *PK, seal::PublicKey public_key, std::shared_ptr<seal::SEALContext> context){
+        int graphSize = G.node->size();
+        vector<pair<int, int>> temp;
+        for(int i=0;i<graphSize;i++){
+                temp.push_back(make_pair(i,Vin[i].Degree));
+        }
+        sort(temp.begin(), temp.end(), cmp);
+/*
+        //check sorted path centrality
+        for(int i=0;i<graphSize;i++){
+                cout <<temp[i].first <<", " <<temp[i].second <<endl;
+        }
+*/
+        vector<int> startNodeSet;
+        int index = 0;
+        double temp_Deg = temp[index].second;
+        while(temp_Deg == temp[index].second){
+                int source = temp[index].first;
+                if(source != destinationNode){
+                        startNodeSet.push_back(source);
+                }
+                index++;
+        }
+        if(startNodeSet.empty()){
+                temp_Deg = temp[index].second;
+                while(temp_Deg == temp[index].second){
+                        int source = temp[index].first;
+                        if(source != destinationNode){
+                                startNodeSet.push_back(source);
+                        }
+                        index++;
+                }
+        }
+//      cout <<index <<", " <<startNodeSet.size() <<endl;
+        for(int i=0;i<dummyNode;i++){
+                double avgDeg=0;
+                double gS = G.node->size();
+                struct degree nodeDegree = getDegree(G);
+                vector<struct degInfo> V = nodeDegree.Vin;
+                for(int i=0;i<gS;i++){
+                        avgDeg += V[i].Degree;
+                }
+                avgDeg = avgDeg / (double)gS;
+
+//                cout <<"Average Degree: " <<avgDeg <<endl;
+
+                int sz = startNodeSet.size();
+                int ran = rand() % sz;
+                int startNodeNumber = startNodeSet[ran];
+
+        //      cout <<"start node: " <<startNodeNumber <<endl;
+
+                createDummyNode(G, 10, 10, 0.0, -1000.0, 1, 1, PK, public_key, context);
+
+                for(int a=0;a<avgDeg;a++){
+        //      cout <<G.node->size()-1 <<endl;
+                        createDummyEdge(G, temp[a].first, G.node->size()-1, true, EK);
+                        createDummyEdge(G, G.node->size()-1, temp[a].first, true, EK);
+//                cout <<"added edge: " <<temp[a].first  <<"--" <<G.node->size()-1 <<endl;
+                }
+        }
+}
+int shortestPathattack(Graph &G, int start, int end, const TFheGateBootstrappingCloudKeySet *EK, const TFheGateBootstrappingSecretKeySet *PK)
+{
+	std::vector<std::vector<int>> temp;
+	std::vector<std::vector<int>> pathlist;
+	int mincut = minCut(G, start, end, EK);
+
+	if(mincut == 1000000) return 0;
+
+	std::vector<int> stack;
+	for(auto inode : *(G.node))	inode.visited = false;
+	for(auto inode : *(G.node)){
+		if(inode.node->NodeNumber == start){
+			inode.visited = true;
+			stack.push_back(start);
+			break;
+		}
+	}
+	std::vector<int> T;
+	T.push_back(start);
+	temp.push_back(T);
+
+	//cout << "mincut : " << mincut << endl;
+
+	// Path finding algorithm...
+	while(stack.size()>0)
+	{
+		// stack pop.
+		int cur = stack[stack.size()-1];
+		stack.pop_back();
+		T = temp[temp.size()-1];
+		temp.pop_back();
+		
+		if(cur == end)
+		{
+			pathlist.push_back(T);
+			continue;
+		}
+		if(T.size()>=mincut)	continue;
+		nodeList n = findNode(G,cur);
+
+		for(auto N : *(n.node->Neighbors))
+		{
+			bool dup = false;
+			for(auto e : T)
+			{
+				if(e == N.NodeNumber) dup = true;
+				break;
+			}
+			if(dup)	continue;
+			stack.push_back(N.NodeNumber);
+			T.push_back(N.NodeNumber);
+			temp.push_back(T);
+			T.pop_back();
+		}
+	}
+
+	//path print debugging
+	/*
+	for(auto e1 : pathlist)
+	{
+		cout << "path : "; 
+		for(auto e2 : e1) cout << e2 << " ";
+		cout << endl;
+	}*/
+	
+	//sort path
+	sort(pathlist.begin(), pathlist.end());
+
+	//shuffle path to garuntee randomness, but keep path length order.
+        vector<vector<vector<int>>> pathBasket;
+	bool st = true;
+	for(auto p : pathlist)
+	{
+		if(st)
+		{
+			vector<vector<int>> b;
+			b.push_back(p);
+			pathBasket.push_back(b);
+			st = false;
+		}
+		else
+		{
+			if(p.size() == pathBasket[pathBasket.size()-1][0].size())
+			{
+				pathBasket[pathBasket.size()-1].push_back(p);
+			}
+			else
+			{
+				vector<vector<int>> b;
+				b.push_back(p);
+				pathBasket.push_back(b);
+			}
+		}
+	}
+	while(pathlist.size()>0)	pathlist.pop_back();
+	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+	for(auto b : pathBasket)
+	{
+		std::shuffle(b.begin(),b.end(),std::default_random_engine(seed));
+		for(auto p : b)	pathlist.push_back(p);
+	}
+
+	//traversal
+	vector<int> node_result;
+
+	LweSample *t = new_gate_bootstrapping_ciphertext(EK->params);
+
+	for(auto p : pathlist)
+	{
+		bootsCONSTANT(t,1,EK);
+		for(int i = 0; i < p.size(); i++)
+		{
+			int e = p[i];
+			node_result.push_back(e);
+			nodeList n = findNode(G,e);
+			
+			bootsAND(n.node->T, t, t, EK);
+
+			if (i == p.size()-1)	continue;
+			for(auto N : *(n.node->Neighbors))
+			{
+				if(N.NodeNumber == p[i+1])
+				{
+					bootsAND(N.T, t, t, EK);
+					break;
+				}	
+			}
+			if(bootsSymDecrypt(t,PK) == 0)	break;
+		}
+		if(bootsSymDecrypt(t,PK) == 0)	break;
+	}
+	delete_gate_bootstrapping_ciphertext(t);
+
+	vector<int>::iterator ip;
+	int count;
+	sort(node_result.begin(), node_result.end());
+	count = std::distance(node_result.begin(), std::unique(node_result.begin(),node_result.end()));
+	return count;
+	
 }

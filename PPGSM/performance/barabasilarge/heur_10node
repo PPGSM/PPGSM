@@ -1,0 +1,209 @@
+SEAL: 0.055691
+TFHE: 1.45182
+make graph: 4.17787
+source node set: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 64 65 66 67 68 69 70 71 72 73 74 75 76 77 78 79 80 81 82 83 84 85 86 87 88 89 90 91 92 93 94 95 96 97 98 99 
+source: 0	destination: 19
+mincut: 3
+source: 1	destination: 58
+mincut: 3
+source: 2	destination: 21
+mincut: 3
+source: 3	destination: 20
+mincut: 2
+source: 4	destination: 47
+mincut: 3
+source: 5	destination: 80
+mincut: 3
+source: 6	destination: 20
+mincut: 3
+7
+source: 7	destination: 62
+mincut: 3
+source: 8	destination: 41
+mincut: 2
+source: 9	destination: 46
+mincut: 2
+source: 10	destination: 30
+mincut: 2
+source: 11	destination: 65
+mincut: 3
+source: 12	destination: 64
+mincut: 2
+source: 13	destination: 14
+mincut: 2
+source: 14	destination: 25
+mincut: 2
+source: 15	destination: 34
+mincut: 2
+source: 16	destination: 85
+mincut: 3
+source: 17	destination: 99
+mincut: 3
+source: 18	destination: 81
+mincut: 3
+source: 19	destination: 46
+mincut: 3
+source: 20	destination: 78
+mincut: 3
+source: 21	destination: 33
+mincut: 2
+source: 22	destination: 82
+mincut: 3
+source: 23	destination: 24
+mincut: 3
+source: 24	destination: 92
+mincut: 2
+source: 25	destination: 28
+mincut: 3
+source: 26	destination: 88
+mincut: 2
+source: 27	destination: 56
+mincut: 3
+source: 28	destination: 29
+mincut: 3
+source: 29	destination: 0
+mincut: 3
+source: 30	destination: 85
+mincut: 3
+source: 31	destination: 82
+mincut: 3
+source: 32	destination: 53
+mincut: 3
+source: 33	destination: 28
+mincut: 3
+source: 34	destination: 72
+mincut: 3
+source: 35	destination: 84
+mincut: 3
+source: 36	destination: 97
+mincut: 3
+source: 37	destination: 19
+mincut: 3
+source: 38	destination: 75
+mincut: 3
+source: 39	destination: 32
+mincut: 3
+source: 40	destination: 31
+mincut: 2
+source: 41	destination: 1
+mincut: 3
+source: 42	destination: 37
+mincut: 3
+source: 43	destination: 75
+mincut: 3
+source: 44	destination: 4
+mincut: 4
+source: 45	destination: 77
+mincut: 4
+46
+source: 46	destination: 33
+mincut: 3
+source: 47	destination: 49
+mincut: 2
+source: 48	destination: 90
+mincut: 3
+source: 49	destination: 27
+mincut: 3
+source: 50	destination: 8
+mincut: 3
+source: 51	destination: 83
+mincut: 4
+source: 52	destination: 17
+mincut: 2
+source: 53	destination: 37
+mincut: 3
+source: 54	destination: 17
+mincut: 3
+source: 55	destination: 58
+mincut: 3
+source: 56	destination: 39
+mincut: 4
+source: 57	destination: 38
+mincut: 3
+source: 58	destination: 48
+mincut: 3
+source: 59	destination: 48
+mincut: 3
+source: 60	destination: 82
+mincut: 4
+source: 61	destination: 58
+mincut: 3
+source: 62	destination: 24
+mincut: 3
+source: 63	destination: 8
+mincut: 3
+source: 64	destination: 45
+mincut: 4
+source: 65	destination: 42
+mincut: 3
+source: 66	destination: 14
+mincut: 2
+67
+source: 67	destination: 20
+mincut: 3
+source: 68	destination: 13
+mincut: 3
+source: 69	destination: 5
+mincut: 3
+source: 70	destination: 71
+mincut: 4
+source: 71	destination: 99
+mincut: 4
+source: 72	destination: 35
+mincut: 3
+source: 73	destination: 68
+mincut: 3
+source: 74	destination: 7
+mincut: 3
+source: 75	destination: 92
+mincut: 3
+source: 76	destination: 51
+mincut: 3
+source: 77	destination: 6
+mincut: 3
+source: 78	destination: 40
+mincut: 3
+source: 79	destination: 65
+mincut: 3
+source: 80	destination: 53
+mincut: 3
+source: 81	destination: 32
+mincut: 3
+source: 82	destination: 27
+mincut: 2
+source: 83	destination: 37
+mincut: 3
+source: 84	destination: 22
+mincut: 2
+source: 85	destination: 12
+mincut: 3
+source: 86	destination: 74
+mincut: 4
+source: 87	destination: 72
+mincut: 4
+source: 88	destination: 97
+mincut: 3
+source: 89	destination: 75
+mincut: 3
+source: 90	destination: 46
+mincut: 2
+source: 91	destination: 80
+mincut: 4
+source: 92	destination: 38
+mincut: 4
+source: 93	destination: 41
+mincut: 3
+source: 94	destination: 4
+mincut: 4
+source: 95	destination: 1
+mincut: 3
+source: 96	destination: 90
+mincut: 3
+source: 97	destination: 2
+mincut: 3
+source: 98	destination: 83
+mincut: 4
+source: 99	destination: 5
+mincut: 3
+50.2687	48.6549	55.1391	54.8164
+6.05	6.03	6.05	6.15

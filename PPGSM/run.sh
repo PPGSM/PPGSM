@@ -1,4 +1,4 @@
-if [[ -d $1 ]]; then
+if [ -d $1 ]; then
 
         for files in $1/*
         do

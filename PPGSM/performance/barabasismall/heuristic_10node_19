@@ -1,0 +1,8 @@
+SEAL: 0.054465
+TFHE: 1.4494
+make graph: 0.844797
+source node set: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 
+source: 19	destination: 5
+mincut: 2
+5.66	6.15	6.49	5.55
+2	2	2	2

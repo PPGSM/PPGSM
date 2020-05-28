@@ -1,4 +1,4 @@
-# Install script for directory: /home/null/다운로드/PPGSM/PPGSM
+# Install script for directory: /home/lee/tmp/newPPGSM
 
 # Set the install prefix
 if(NOT DEFINED CMAKE_INSTALL_PREFIX)
@@ -45,5 +45,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/null/다운로드/PPGSM/PPGSM/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/lee/tmp/newPPGSM/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")
