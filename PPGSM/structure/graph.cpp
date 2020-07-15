@@ -145,6 +145,10 @@ void init_probe(struct Graph& G, int startNumber, int destNumber, const TFheGate
 
 	//find start-node and start assessment (attack cost & risk)
 	nodeList inode = findNode(G, startNumber);
+	
+	parms_id_type cost_parms_id = inode.node->Weight.parms_id();
+        eval.mod_switch_to_inplace(cost, cost_parms_id);
+	
 	LweSample *T = new_gate_bootstrapping_ciphertext(EK->params);	// a variable for check paths are real.
 	bootsCONSTANT(T, 1, EK);
 	vector<int> path;	//vector to store path information
