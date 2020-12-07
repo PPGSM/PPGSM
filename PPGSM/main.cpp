@@ -42,8 +42,8 @@ we change initial parameters for incresing a number of multiplications because o
 	CKKSEncoder encoder(context);
 	auto public_key = keygen.public_key();
     	auto secret_key = keygen.secret_key();
-    	auto relin_keys = keygen.relin_keys();
-	GaloisKeys gal_keys = keygen.galois_keys();
+    	auto relin_keys = keygen.relin_keys_local();
+	GaloisKeys gal_keys = keygen.galois_keys_local();
     	Encryptor encryptor(context, public_key);
     	Evaluator evaluator(context);
     	Decryptor decryptor(context, secret_key);	//decryptor is only used for check result.
@@ -69,12 +69,9 @@ we change initial parameters for incresing a number of multiplications because o
 				///////////////
 				// main part //
 				///////////////
-	// receive info to analyze GSM
-        int startPoint, endPoint;
-        cout <<"Enter start point and end point: ";
-        cin >> startPoint >>endPoint;
 		
 			/* process to construct a GSM */
+	
 	vector<string> OSList =  loadOSlist("table/OSlist");
 	queryDataByFile(argv[2],OSList, encoder, encryptor);
 
@@ -87,6 +84,12 @@ we change initial parameters for incresing a number of multiplications because o
 	//server-side
 	GSMCreation(G, context, gal_keys, evaluator, relin_keys, &key->cloud);
 			
+	// receive info to analyze GSM
+        int startPoint, endPoint;
+        cout <<"Enter start point and end point: ";
+        cin >> startPoint >>endPoint;
+
+
 		/* Independent probability of attack success */
 /*
 	start_ = clock();	
