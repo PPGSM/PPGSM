@@ -553,6 +553,11 @@ void PrAtkSuccessProbe(struct Graph& G, Ciphertext logPr, struct nodeList& N, Lw
 //	cout << N.node->NodeNumber << endl;
 //	std::ofstream out("probabilityInfo.txt", std::ios::app);
 	if(N.node->user == false){
+		cout << "P" << endl;
+		cout << logPr.scale() << endl;
+		cout << N.node->logPr.scale() << endl;
+		parms_id_type last_parms_id = N.node->logPr.parms_id();
+		eval.mod_switch_to_inplace(logPr, last_parms_id);
 		eval.add_inplace(logPr,N.node->logPr);
         }
 //	path.push_back(N.node->NodeNumber);
@@ -688,23 +693,36 @@ void PrAtkSuccess(struct Graph& G, int startNumber, int destNumber, const TFheGa
 //			cout <<"initial: " <<context->get_context_data(pathPr[1].parms_id())->chain_index() <<endl;
 
 			//1st term
+			eval.relinearize_inplace(pathPr[i], relin_keys);
+			eval.rescale_to_next_inplace(pathPr[i]);
+			pathPr[i].scale() = pow(2.0,40);
+			
+			parms_id_type last_parms_id = pathPr[i].parms_id();
+			eval.mod_switch_to_inplace(temp1, last_parms_id);
+
 			eval.multiply_inplace(temp1, pathPr[i]);
 			eval.relinearize_inplace(temp1, relin_keys);
 			eval.rescale_to_next_inplace(temp1);
 			temp1.scale() = pow(2.0,40);
+
+			cout << "1st term" << endl;
 
 			//2nd term
 			eval.square(pathPr[i], temp);
 			eval.relinearize_inplace(temp, relin_keys);
 			eval.rescale_to_next_inplace(temp);
 
-			parms_id_type last_parms_id = temp.parms_id();
+			last_parms_id = temp.parms_id();
 			temp.scale() = pow(2.0,40);
+			eval.mod_switch_to_inplace(temp1, last_parms_id);
 			eval.mod_switch_to_inplace(temp2, last_parms_id);
+			
 			eval.multiply_inplace(temp2, temp);
 			eval.relinearize_inplace(temp2, relin_keys);
 			eval.rescale_to_next_inplace(temp2);
 			temp2.scale() = pow(2.0,40);
+
+			cout << "2nd term" << endl;
 
 			//3rd term
 			eval.multiply_inplace(temp3, pathPr[i]);
@@ -1375,13 +1393,14 @@ void processQuery(Graph &G, int NID, std::shared_ptr<seal::SEALContext> context,
                                 //Vector pairwise product
 
                                 evaluator.multiply_plain(queryProduct,pt,queried_vector);
-                                //evaluator.relinearize_inplace(queried_vector,relin_keys); 
-                                //evaluator.rescale_to_next_inplace(queried_vector);
+                                evaluator.relinearize_inplace(queried_vector,relin_keys); 
+                                evaluator.rescale_to_next_inplace(queried_vector);
+                                queried_vector.scale() = pow(2.0,40);
 
                                 Ciphertext queried_value = summation(context, encoder, queried_vector, gal_keys, evaluator);
-                                evaluator.relinearize_inplace(queried_value,relin_keys);
-                                evaluator.rescale_to_next_inplace(queried_value);
-                                queried_value.scale() = pow(2.0,40);
+                                //evaluator.relinearize_inplace(queried_value,relin_keys);
+                                //evaluator.rescale_to_next_inplace(queried_value);
+                                //queried_value.scale() = pow(2.0,40);
 
 				if(i==0)        N.node->Weight = queried_value;
                                 if(i==1)        N.node->Impact = queried_value;
