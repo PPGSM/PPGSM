@@ -1,3 +1,0 @@
-/home/null/PPGSM/PPGSM/CMakeFiles/rebuild_cache.dir
-/home/null/PPGSM/PPGSM/CMakeFiles/edit_cache.dir
-/home/null/PPGSM/PPGSM/CMakeFiles/homomorphic_graph.dir
