@@ -35,9 +35,11 @@ we change initial parameters for incresing a number of multiplications because o
 	
 //	size_t poly_modulus_degree = 8192;
 	size_t poly_modulus_degree = 32768;
+//	size_t poly_modulus_degree = 65536;
+
 	prms.set_poly_modulus_degree(poly_modulus_degree);
 //	prms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, {60, 40, 40, 60}));
-	prms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, {60, 40, 40, 40, 40, 40, 40, 40, 40, 60}));
+	prms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, {60, 40, 40, 40, 40, 40, 40, 40, 40, 40, 60}));
 
 	//if(command.compare("basic") == 0 || command.compare("client_gsm") == 0 )
 	//{

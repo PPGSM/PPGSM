@@ -693,10 +693,6 @@ void PrAtkSuccess(struct Graph& G, int startNumber, int destNumber, const TFheGa
 //			cout <<"initial: " <<context->get_context_data(pathPr[1].parms_id())->chain_index() <<endl;
 
 			//1st term
-			eval.relinearize_inplace(pathPr[i], relin_keys);
-			eval.rescale_to_next_inplace(pathPr[i]);
-			pathPr[i].scale() = pow(2.0,40);
-			
 			parms_id_type last_parms_id = pathPr[i].parms_id();
 			eval.mod_switch_to_inplace(temp1, last_parms_id);
 
@@ -705,8 +701,6 @@ void PrAtkSuccess(struct Graph& G, int startNumber, int destNumber, const TFheGa
 			eval.rescale_to_next_inplace(temp1);
 			temp1.scale() = pow(2.0,40);
 
-			cout << "1st term" << endl;
-
 			//2nd term
 			eval.square(pathPr[i], temp);
 			eval.relinearize_inplace(temp, relin_keys);
@@ -714,7 +708,6 @@ void PrAtkSuccess(struct Graph& G, int startNumber, int destNumber, const TFheGa
 
 			last_parms_id = temp.parms_id();
 			temp.scale() = pow(2.0,40);
-			eval.mod_switch_to_inplace(temp1, last_parms_id);
 			eval.mod_switch_to_inplace(temp2, last_parms_id);
 			
 			eval.multiply_inplace(temp2, temp);
@@ -722,9 +715,10 @@ void PrAtkSuccess(struct Graph& G, int startNumber, int destNumber, const TFheGa
 			eval.rescale_to_next_inplace(temp2);
 			temp2.scale() = pow(2.0,40);
 
-			cout << "2nd term" << endl;
-
 			//3rd term
+			last_parms_id = pathPr[i].parms_id();
+                        eval.mod_switch_to_inplace(temp3, last_parms_id);
+			
 			eval.multiply_inplace(temp3, pathPr[i]);
 			eval.relinearize_inplace(temp3, relin_keys);
 			eval.rescale_to_next_inplace(temp3);
@@ -749,11 +743,15 @@ void PrAtkSuccess(struct Graph& G, int startNumber, int destNumber, const TFheGa
                         temp4.scale() = pow(2.0,40);
 
 			//5th term
+			last_parms_id = pathPr[i].parms_id();
+                        eval.mod_switch_to_inplace(temp5, last_parms_id);
+
 			eval.multiply_inplace(temp5, pathPr[i]);
 			eval.relinearize_inplace(temp5, relin_keys);
                         eval.rescale_to_next_inplace(temp5);
                         temp5.scale() = pow(2.0,40);
 
+			last_parms_id = temp_a.parms_id();
 			eval.mod_switch_to_inplace(temp5, last_parms_id);
                         eval.multiply_inplace(temp5, temp_a);
                         eval.relinearize_inplace(temp5, relin_keys);
@@ -770,7 +768,6 @@ void PrAtkSuccess(struct Graph& G, int startNumber, int destNumber, const TFheGa
                         temp6.scale() = pow(2.0,40);
 
 			last_parms_id = temp_a.parms_id();
-                        temp_a.scale() = pow(2.0,40);
                         eval.mod_switch_to_inplace(temp6, last_parms_id);
                         eval.multiply_inplace(temp6, temp_a);
                         eval.relinearize_inplace(temp6, relin_keys);
@@ -778,22 +775,19 @@ void PrAtkSuccess(struct Graph& G, int startNumber, int destNumber, const TFheGa
                         temp6.scale() = pow(2.0,40);
 
 			//7th term
+			last_parms_id = pathPr[i].parms_id();
+                        eval.mod_switch_to_inplace(temp7, last_parms_id);
+
 			eval.multiply_inplace(temp7, pathPr[i]);
                         eval.relinearize_inplace(temp7, relin_keys);
                         eval.rescale_to_next_inplace(temp7);
                         temp7.scale() = pow(2.0,40);
 
-			last_parms_id = temp.parms_id();
-                        temp.scale() = pow(2.0,40);
-                        eval.mod_switch_to_inplace(temp7, last_parms_id);
                         eval.multiply_inplace(temp7, temp);
                         eval.relinearize_inplace(temp7, relin_keys);
                         eval.rescale_to_next_inplace(temp7);
                         temp7.scale() = pow(2.0,40);
 
-                        last_parms_id = temp_a.parms_id();
-                        temp_a.scale() = pow(2.0,40);
-                        eval.mod_switch_to_inplace(temp7, last_parms_id);
                         eval.multiply_inplace(temp7, temp_a);
                         eval.relinearize_inplace(temp7, relin_keys);
                         eval.rescale_to_next_inplace(temp7);
@@ -813,11 +807,15 @@ void PrAtkSuccess(struct Graph& G, int startNumber, int destNumber, const TFheGa
                         temp8.scale() = pow(2.0,40);
 
 			//9th term
+			last_parms_id = pathPr[i].parms_id();
+                        eval.mod_switch_to_inplace(temp9, last_parms_id);
+
 			eval.multiply_inplace(temp9, pathPr[i]);
                         eval.relinearize_inplace(temp9, relin_keys);
                         eval.rescale_to_next_inplace(temp9);
                         temp9.scale() = pow(2.0,40);
 
+			last_parms_id = temp_b.parms_id();
 			eval.mod_switch_to_inplace(temp9, last_parms_id);
                         eval.multiply_inplace(temp9, temp_b);
                         eval.relinearize_inplace(temp9, relin_keys);
@@ -826,7 +824,6 @@ void PrAtkSuccess(struct Graph& G, int startNumber, int destNumber, const TFheGa
 
 			//10th term
 			last_parms_id = temp.parms_id();
-                        temp.scale() = pow(2.0,40);
                         eval.mod_switch_to_inplace(temp10, last_parms_id);
                         eval.multiply_inplace(temp10, temp);
                         eval.relinearize_inplace(temp10, relin_keys);
@@ -840,7 +837,6 @@ void PrAtkSuccess(struct Graph& G, int startNumber, int destNumber, const TFheGa
                         eval.relinearize_inplace(temp10, relin_keys);
                         eval.rescale_to_next_inplace(temp10);
                         temp10.scale() = pow(2.0,40);
-
 
 			last_parms_id = temp10.parms_id();
 			eval.mod_switch_to_inplace(temp0, last_parms_id);
@@ -864,7 +860,6 @@ void PrAtkSuccess(struct Graph& G, int startNumber, int destNumber, const TFheGa
 			eval.add_inplace(temp0, temp8);
 			eval.add_inplace(temp0, temp9);
 			eval.add_inplace(temp0, temp10);
-
 		/*
 			//test
 			Plaintext Test_result2;
@@ -988,7 +983,6 @@ void PrAtkSuccess(struct Graph& G, int startNumber, int destNumber, const TFheGa
                         secondtemp6.scale() = pow(2.0,40);
                         secondtemp7.scale() = pow(2.0,40);
 
-
 			//mult x^8
 			eval.square(secondtemp_a, secondtemp_b);
                         eval.relinearize_inplace(secondtemp_b, relin_keys);
@@ -998,7 +992,7 @@ void PrAtkSuccess(struct Graph& G, int startNumber, int destNumber, const TFheGa
                         eval.mod_switch_to_inplace(secondtemp8, last_parms_id);
                         eval.mod_switch_to_inplace(secondtemp9, last_parms_id);
                         eval.mod_switch_to_inplace(secondtemp10, last_parms_id);
-                        eval.multiply_inplace(secondtemp8, secondtemp_b);
+			eval.multiply_inplace(secondtemp8, secondtemp_b);
                         eval.multiply_inplace(secondtemp9, secondtemp_b);
                         eval.multiply_inplace(secondtemp10, secondtemp_b);
                         eval.relinearize_inplace(secondtemp8, relin_keys);
