@@ -67,7 +67,7 @@ Compile test code:
     
 Run compiled binary:   
 
-    ./testPPGSM sampleData/graphinfo1 sampleData/graphinfo2 sampleData/graphinfo3   
+    ./homomorphic_graph sampleData/graphinfo1 sampleData/graphinfo2 sampleData/graphinfo3   
    
 Utilities
 
