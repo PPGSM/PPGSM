@@ -21,6 +21,28 @@ void prune(struct Graph &G, struct degree &V, int number);
 void PrAtkSuccess(struct Graph& G, int startNumber, int destNumber, const TFheGateBootstrappingCloudKeySet* EK, const TFheGateBootstrappingSecretKeySet *PK, Evaluator &eval, seal::RelinKeys& relin_keys, seal::PublicKey public_key, std::shared_ptr<seal::SEALContext> context, seal::SecretKey secret_key);
 void cumulPrAtkSuccess(struct Graph& G, int startNumber, Evaluator &eval, seal::RelinKeys& relin_keys, seal::PublicKey public_key, std::shared_ptr<seal::SEALContext> context, seal::SecretKey secret_key);
 void returnInvestment(struct Graph& G, int startNumber, int destNumber, int target, const TFheGateBootstrappingCloudKeySet* EK, const TFheGateBootstrappingSecretKeySet *PK, Evaluator &eval, seal::RelinKeys& relin_keys, seal::PublicKey public_key, std::shared_ptr<seal::SEALContext> context, seal::SecretKey secret_key);
-void processQuery(Graph &G, int NID, std::shared_ptr<seal::SEALContext> context, GaloisKeys &gal_keys, Evaluator &evaluator, seal::RelinKeys &relin_keys);
-void GSMCreation(Graph &G, std::shared_ptr<seal::SEALContext> context, GaloisKeys &gal_keys, Evaluator &evaluator, seal::RelinKeys &relin_keys, const TFheGateBootstrappingCloudKeySet *EK);
 
+
+
+vector<double> closeness(Graph& G, const TFheGateBootstrappingCloudKeySet* EK);
+vector<double> harmonic(Graph& G, const TFheGateBootstrappingCloudKeySet* EK);
+vector<double> betweenness(Graph& G, const TFheGateBootstrappingCloudKeySet* EK);
+std::vector<double> getNormalizedDegree(struct Graph& G);
+vector<double> normalizedCloseness(Graph& G, const TFheGateBootstrappingCloudKeySet* EK);
+vector<double> normalizedHarmonic(Graph& G, const TFheGateBootstrappingCloudKeySet* EK);
+vector<double> normalizedBetweenness(Graph& G, const TFheGateBootstrappingCloudKeySet* EK);
+void extract2(struct Graph& G, vector<vector<int>>* T, struct nodeList& N, vector<int> path, int dest, const TFheGateBootstrappingCloudKeySet* EK);
+//vector<double> somePathBetweennessCentrality(Graph& G, const TFheGateBootstrappingCloudKeySet* EK, int dest);
+void addRandomlyOnlyEdges(struct Graph& G, int dummyEdgesNum, const TFheGateBootstrappingCloudKeySet* EK);
+void addRandomlyEdgesNodes(struct Graph& G, int dummyNodesNum, int graphSize, const TFheGateBootstrappingCloudKeySet* EK, const TFheGateBootstrappingSecretKeySet *PK, seal::PublicKey public_key, std::shared_ptr<seal::SEALContext> context);
+vector<double> allPathBetweennessCentrality(Graph& G, const TFheGateBootstrappingCloudKeySet* EK, int source, int dest);
+vector<double> weightedPathBetweennessCentrality(Graph& G, const TFheGateBootstrappingCloudKeySet* EK,int source, int dest);
+vector<double> someBetweennessCen(Graph &G, const TFheGateBootstrappingCloudKeySet* EK, int dest, set<int> &sourceNodeSet);
+vector<double> somePathBetCen(Graph& G, const TFheGateBootstrappingCloudKeySet* EK, int dest, set<int> &sourceNodeSet);
+void heuristicOnlyEdges2(struct Graph &G, int sourceNode, int destinationNode, const TFheGateBootstrappingCloudKeySet* EK);
+void heuristicAddNodes(struct Graph &G, int destinationNode, int dummyNode, vector<double> betweennessCen, const TFheGateBootstrappingCloudKeySet* EK, const TFheGateBootstrappingSecretKeySet *PK, seal::PublicKey public_key, std::shared_ptr<seal::SEALContext> context);
+void countTotalPath(struct Graph& G, int startNumber, int destNumber);
+void changeGraph(struct Graph &G, int source);
+void heuristicAddNodes2(struct Graph &G, int destinationNode, int dummyNode, vector<double> betweennessCen, const TFheGateBootstrappingCloudKeySet* EK, const TFheGateBootstrappingSecretKeySet *PK, seal::PublicKey public_key, std::shared_ptr<seal::SEALContext> context);
+void heuristicAddNodesDB(struct Graph &G, int destinationNode, int dummyNode, vector<struct degInfo> Vin, const TFheGateBootstrappingCloudKeySet* EK, const TFheGateBootstrappingSecretKeySet *PK, seal::PublicKey public_key, std::shared_ptr<seal::SEALContext> context);
+int shortestPathattack(Graph &G, int start, int end, const TFheGateBootstrappingCloudKeySet *EK, const TFheGateBootstrappingSecretKeySet *PK);
