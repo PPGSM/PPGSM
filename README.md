@@ -5,36 +5,14 @@ This software enables one to evaluate the security of a network system in a priv
 
 Prerequesites
 - OS: Ubuntu 18.04 above   
-- HE libraries: TFHE and SEAL homomorphic encryption (HE) have to be installed.    
+- HE libraries: SEAL have to be installed.    
 
 1. Installating and Testing
 
-Install the two HE libraries.    
-To use PPGSM, install two homomorphic encrpytion libraries: TFHE and SEAL.   
-  
-1.1. Installing TFHE   
+Install the SEAL library.    
+To use PPGSM, install a homomorphic encrpytion library which is SEAL.    
 
-Get the TFHE installation file available at: https://github.com/tfhe/tfhe/tarball/master     
-(Note that the TFHE github main version would have a problem on installing TFHE)   
-Unzip the tar.gz file into a directory and go to the directory where README.md and LICENSE are.   
-Then, make directory named 'build':   
-
-    mkdir build   
-  
-Go to the 'build' directory:   
-
-    cd build   
-    
-Then, make installation file in the build directory:   
-
-    cmake ../src   
-    
-Finally, using commands below, install TFHE:    
-
-    make    
-    sudo make install   
-
-1.2. Installing SEAL 
+1.1. Installing SEAL 
 
 Get SEAL installation file: git clone https://github.com/microsoft/SEAL   
 Go to the SEAL native directory:   
