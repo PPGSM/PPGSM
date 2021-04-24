@@ -45,18 +45,16 @@ Compile test code:
     
 Run compiled binary:   
 
-    ./homomorphic_graph sampleData/graphinfo1 sampleData/graphinfo2 sampleData/graphinfo3   
+    ./homomorphic_graph testData/[graph file name] testData/testnodetype_60 (testnodetype_103 for "realGraph") testData/testtypeinfo [security metric info]
    
 Utilities
 
-   A. User-side utilites (functions can found in utility/graph_client.h)   
+   A. User-side utilites (functions can found in utility/graph_client.h)
+    calculating centrality metrics: betweenness centrality (for graph obfuscation)
     creating real/dummy node/edges   
     creating graph   
    
    B. Server-side utilites (functions can found in structure/graph.h)   
     probing encrypted graph   
-    simple metrics: mincut, minlength, calculating degree vector   
-    graph pruning operation   
-    complex operations: probability of attack succeess, return on investment  
-    centrality metrics: clossness/harmonic/etweenness centrality   
-    heurisitc dummy node/edge addition   
+    simple metrics: indeoendent attack success probability (ind ASP), return on investment (ROSI), attack cost & risk, cumulative attack success probabiltiy (cum ASP)
+    heurisitc dummy node/edge addition
