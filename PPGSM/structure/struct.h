@@ -1,36 +1,29 @@
-#include <tfhe/tfhe_io.h>
 #include "seal/seal.h"
-
-//#include <helib/FHE.h>
-//#include <helib/EncryptedArray.h>
-
 #include <vector>
 #include <list>
 
 using namespace seal;
 // Adjacent list based approach
 struct node{
-	bool		 user;
-	int		 NodeNumber;    // Corresponding node number.
+	bool		user;
+	int		NodeNumber;    // Corresponding node number.
 	
-	Ciphertext	 Weight;
-	Ciphertext	 Impact;
-	Ciphertext	 Pr;
-	Ciphertext	 logPr;
-	Ciphertext	 Patch;
-	Ciphertext	 inversePatch;
+	Ciphertext	Weight;
+	Ciphertext	Impact;
+	Ciphertext	Pr;
+	Ciphertext	logPr;
+	Ciphertext	Patch;
+	Ciphertext	inversePatch;
+	Ciphertext	T;
 
 	double		 exactPr;
 	double		 exactlogPr;
 
-
-	LweSample *T;
 	std::list<struct Neighbor>* Neighbors;
 };
 
 struct Neighbor{
 	int	   	 NodeNumber;
-	LweSample* 	 T;
 };
 
 struct Graph{

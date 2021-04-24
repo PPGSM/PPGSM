@@ -1,6 +1,3 @@
-#include <tfhe/tfhe.h>
-#include <tfhe/tfhe_io.h>
-
 #include <iostream>
 #include <fstream>
 #include <stdlib.h>
@@ -8,6 +5,7 @@
 #include <unistd.h>
 #include <vector>
 #include <list>
+#include <cmath>
 
 #include "../structure/struct.h"
 
@@ -18,7 +16,7 @@ using namespace std;
 ///////////////		adding components of the graph(node & edge)	//////////////
 
 //create a real node
-void createNode(struct Graph &G, int nodeNumber, double weight, double impact, double pr, double logPr, double patch, double inv_patch, bool isUser, bool isTrue, const TFheGateBootstrappingSecretKeySet* PK, seal::PublicKey public_key, std::shared_ptr<seal::SEALContext> context){
+void createNode(struct Graph &G, int nodeNumber, double weight, double impact, double pr, double logPr, double patch, double inv_patch, bool isUser, bool isTrue, seal::PublicKey public_key, std::shared_ptr<seal::SEALContext> context){
 	struct nodeList P;
 	P.unchangeable    = false;
 	P.visited	  = false;
@@ -26,22 +24,25 @@ void createNode(struct Graph &G, int nodeNumber, double weight, double impact, d
 	Pn->user	  = isUser;
 	Pn->NodeNumber    = nodeNumber;
 	Pn->Neighbors     = new std::list<struct Neighbor>;
-	Pn->T		  = new_gate_bootstrapping_ciphertext(PK->cloud.params);
 
 	Pn->exactPr	  = pr;
 	Pn->exactlogPr	  = logPr;
 
 	double scale = pow(2.0, 40);
+	double dummynode = M_PI/64;
+	if(isTrue)
+		dummynode = 0;
 
 	CKKSEncoder encoder(context);
 
-	Plaintext Wplain,Iplain,Pplain,Prplain,Patchplain,InvPatchplain;
+	Plaintext Wplain, Iplain, Pplain, Prplain, Patchplain, InvPatchplain, Dummyplain;
 	encoder.encode(weight, scale, Wplain);
 	encoder.encode(impact, scale, Iplain);
 	encoder.encode(pr, scale, Pplain);
 	encoder.encode(logPr, scale, Prplain);
 	encoder.encode(patch, scale, Patchplain);
 	encoder.encode(inv_patch, scale, InvPatchplain);
+	encoder.encode(dummynode, scale, Dummyplain);
 
 	Encryptor encryptor(context,public_key);
 	encryptor.encrypt(Wplain,Pn->Weight);
@@ -50,24 +51,13 @@ void createNode(struct Graph &G, int nodeNumber, double weight, double impact, d
 	encryptor.encrypt(Prplain,Pn->logPr);
 	encryptor.encrypt(Patchplain,Pn->Patch);
 	encryptor.encrypt(InvPatchplain,Pn->inversePatch);
+	encryptor.encrypt(Dummyplain, Pn->T);
 
 	Pn->exactPr = pr;
 	Pn->exactlogPr = logPr;
-/*
-	std::ofstream sizeout("nodeSize.txt", std::ios::app);
-	(Pn->Weight).save(sizeout);
-	(Pn->Impact).save(sizeout);
-	(Pn->Pr).save(sizeout);
-	(Pn->logPr).save(sizeout);
-	(Pn->Patch).save(sizeout);
-	(Pn->inversePatch).save(sizeout);
-	sizeout.close();
-*/
 
 //	cout <<"setting: " <<context->get_context_data((Pn->Pr).parms_id())->chain_index() <<endl;
 
-
-	bootsCONSTANT(Pn->T, (int)isTrue, &(PK->cloud));
 	P.node = Pn;
 	G.node->push_back(P);
         return;
@@ -75,30 +65,27 @@ void createNode(struct Graph &G, int nodeNumber, double weight, double impact, d
 
 
 //create a duumy node
-void createDummyNode(struct Graph &G, int weight, int impact, double pr, double logPr, double patch, double inv_patch, const TFheGateBootstrappingSecretKeySet *PK, seal::PublicKey public_key, std::shared_ptr<seal::SEALContext> context){
-        createNode(G, G.node->size(), weight, impact, pr, logPr, patch, inv_patch, false, false, PK,public_key,context);
+void createDummyNode(struct Graph &G, int weight, int impact, double pr, double logPr, double patch, double inv_patch, seal::PublicKey public_key, std::shared_ptr<seal::SEALContext> context){
+        createNode(G, G.node->size(), weight, impact, pr, logPr, patch, inv_patch, false, false, public_key, context);
 }
 
 //create a real edge
-void createEdge(struct node* N, int target, bool isTrue, const TFheGateBootstrappingCloudKeySet* EK){
+void createEdge(struct node* N, int target, bool isTrue){
 	struct Neighbor P;
 	P.NodeNumber = target;
-	P.T = new_gate_bootstrapping_ciphertext(EK->params);
-	bootsCONSTANT(P.T, isTrue, EK);
 	N->Neighbors->push_back(P);
         return;
 }
 
 //create a dummy edge
-void createDummyEdge(struct Graph &G, int src, int target, bool isTrue, const TFheGateBootstrappingCloudKeySet* EK){
+void createDummyEdge(struct Graph &G, int src, int target, bool isTrue){
 	std::list<struct nodeList>::iterator iter;
 	for(iter = G.node->begin(); (*iter).node->NodeNumber != src; ++iter);
-
-	createEdge((*iter).node, target, isTrue, EK);
+	createEdge((*iter).node, target, isTrue);
 }
 
 //Make a initial graph(not modified) by using adjacent matrix.
-void MakeGraph(Graph& G, char *Mat, char *NodeInfo, char *Trait, const TFheGateBootstrappingSecretKeySet *PK, seal::PublicKey public_key, std::shared_ptr<seal::SEALContext> context){
+void MakeGraph(Graph& G, char *Mat, char *NodeInfo, char *Trait, seal::PublicKey public_key, std::shared_ptr<seal::SEALContext> context){
 	G.node = new std::list<struct nodeList>;
 	// Matrix reading stage
 	vector<vector<int>> V; 
@@ -230,14 +217,19 @@ void MakeGraph(Graph& G, char *Mat, char *NodeInfo, char *Trait, const TFheGateB
 		bool User = true;
 		for(int i = 0; i < TrSize; i++){
 			if(strncmp(t2, Tr[i].type, len) == 0){
-				createNode(G, nodeNumber, Tr[i].cost, Tr[i].impact, Tr[i].pr, Tr[i].logPr, Tr[i].patch, Tr[i].inverse_patch, false, true,PK,public_key,context);
+				/////test for spearman
+				if(i == 3){
+					createNode(G, nodeNumber, Tr[i].cost, Tr[i].impact, Tr[i].pr, Tr[i].logPr, Tr[i].patch, Tr[i].inverse_patch, false, false, public_key, context);	
+				}
+				else
+					createNode(G, nodeNumber, Tr[i].cost, Tr[i].impact, Tr[i].pr, Tr[i].logPr, Tr[i].patch, Tr[i].inverse_patch, false, true, public_key, context);
 				nodeNumber++;
 				User = false;
 				break;
 			}
 		}
 		if(User == true){
-			createNode(G, nodeNumber, 0, 0, 0.0, -100000, 1, 1, true, true, PK,public_key,context);
+			createNode(G, nodeNumber, 0, 0, 0.0, -100000, 1, 1, true, true, public_key,context);
 			nodeNumber++;
 		}
 		c = read(nod, &T, 1);
@@ -250,14 +242,35 @@ void MakeGraph(Graph& G, char *Mat, char *NodeInfo, char *Trait, const TFheGateB
 
 		for(int i = 0; i < lenN; i++){
 			if(V[Index][i] == 1 && Index != i){
-				createEdge((*iter).node, i, true, &PK->cloud);
+				createEdge((*iter).node, i, true);
 			}
 			else if(V[Index][i] == 2 && Index != i){
-				createEdge((*iter).node, i, false, &PK->cloud);
+				createEdge((*iter).node, i, false);
 			}
 		} 
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 //// functions for creating info which are required to create GSM in server ////
 void queryData(std::vector<std::string> &OSlist, std::string &targetOS, int NID, CKKSEncoder &encoder, Encryptor &encryptor)
@@ -309,7 +322,7 @@ void queryDataByFile(char* f, std::vector<std::string> &OSlist, CKKSEncoder &enc
         }
 }
 
-void createTopology(Graph &G, const TFheGateBootstrappingCloudKeySet *EK)
+void createTopology(Graph &G)
 {
         int node_counter = 0;
         int edge_counter = 0;
@@ -317,17 +330,17 @@ void createTopology(Graph &G, const TFheGateBootstrappingCloudKeySet *EK)
         {
                 int NID = N.node->NodeNumber;
                 //save node information
-                ofstream nodeTruth("nodes/nodeTruth"+to_string(NID),std::ofstream::binary);
-                export_gate_bootstrapping_ciphertext_toStream(nodeTruth,N.node->T,EK->params);
+                ofstream nodeTruth("GSMConstruction/nodes/nodeTruth"+to_string(NID),std::ofstream::binary);
+//		export_gate_ddbootstrapping_ciphertext_toStream(nodeTruth,N.node->T,EK->params);
                 nodeTruth.close();
 
                 //save edge information
                 struct node* Nn = N.node;
                 for(auto Ne : *(Nn->Neighbors))
                 {
-                        ofstream edgeTruth("edges/edgeTruth"+to_string(edge_counter),std::ofstream::binary);
-                        export_gate_bootstrapping_ciphertext_toStream(edgeTruth,Ne.T,EK->params);
-                        ofstream edgeInfo("edges/edge"+to_string(edge_counter));
+			ofstream edgeTruth("GSMConstruction/edges/edgeTruth"+to_string(edge_counter),std::ofstream::binary);
+//			export_gate_bootstrapping_ciphertext_toStream(edgeTruth,Ne.T,EK->params);
+                        ofstream edgeInfo("GSMConstruction/edges/edge"+to_string(edge_counter));
                         edgeInfo << NID << " " << Ne.NodeNumber;
                         edgeTruth.close();
                         edgeInfo.close();
@@ -335,9 +348,9 @@ void createTopology(Graph &G, const TFheGateBootstrappingCloudKeySet *EK)
                 }
                 node_counter++;
         }
-        ofstream nodeNum("nodes/number_nodes");
+        ofstream nodeNum("GSMConstruction/nodes/number_nodes");
         nodeNum << node_counter;
-        ofstream edgeNum("edges/number_edges");
+        ofstream edgeNum("GSMConstruction/edges/number_edges");
         edgeNum << edge_counter;
         nodeNum.close();
         edgeNum.close();
