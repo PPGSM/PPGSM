@@ -38,7 +38,8 @@ Move to PPGSM directory:
     
 Compile test code:   
 
-    cmake .   
+    cmake .
+    make
     
 Run compiled binary:   
 
