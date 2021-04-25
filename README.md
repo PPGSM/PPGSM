@@ -15,21 +15,18 @@ To use PPGSM, install a homomorphic encrpytion library which is SEAL.
 1.1. Installing SEAL 
 
 Get SEAL installation file: git clone https://github.com/microsoft/SEAL   
-Go to the SEAL native directory:   
+Go to the SEAL directory:   
 
-    cd SEAL/native   
+    cd SEAL   
     
-Make 'build' directory, change directory and install:    
+Enter following commands to install:    
 
-    mkdir build    
-    cd build    
-    make installation file: cmake ../src
+    cmake -S . -B build    
+    cmake --build build    
+    sudo cmake --install build
 
-Finally, install SEAL:    
+We can find more details about SEAL installation in https://github.com/microsoft/SEAL.
 
-    make    
-    sudo make install       
-   
 2. Running testcode    
 Install PP-GSM module:    
 
