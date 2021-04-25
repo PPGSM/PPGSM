@@ -121,7 +121,7 @@ int main(int argc, char **argv){
 		end_ = clock();
 		cout <<"Cumulative attack cost calculation time: " << ((double)(end_ - start_) / CLOCKS_PER_SEC) <<endl;
 	}
-	
+	/*
 			// Shortest path length (SPL) //
  	if(command.compare("spl") == 0){
 		start_ = clock();	
@@ -136,7 +136,7 @@ int main(int argc, char **argv){
 		end_ = clock();
 		cout <<"MPL calculation time: " <<((double)(end_ - start_) / CLOCKS_PER_SEC) <<endl;
 	}
-
+	*/
 	delete_graph(G);
 	return 0;
 }
