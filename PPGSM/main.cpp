@@ -73,7 +73,6 @@ int main(int argc, char **argv){
 		//////////////////////////////////////////////////
 	string command = argv[4];
 	int startPoint, endPoint;
-	/*
 	bool validPoint = false;
 	while(!validPoint){
 		cout <<"Enter start point and end point: ";
@@ -86,64 +85,51 @@ int main(int argc, char **argv){
 			cout << "Invalid Point. Try again." << endl;
 		}
 	}
-	*/
 	cout <<"Size of the graph: " << G.node->size() << endl;
-//	srand(time(NULL));
-	for(int i=0;i<30;i++){
-		startPoint = rand()%G.node->size();
-		endPoint = rand()%G.node->size();
-//	for(int i=0;i<G.node->size();i++){
-//		for(int j=i+1;j<G.node->size();j++){
-//			startPoint = i;
-//			endPoint = j;
-			cout <<"Start point: " <<startPoint <<", ";
-			cout <<"End point: " <<endPoint <<endl;		
-			// Independent probability of attack success /
-		//	if(command.compare("ind_poas") == 0){
-				start_ = clock();	
-				PrAtkSuccess(G,startPoint,endPoint,evaluator,relin_keys,public_key,context,secret_key);
-				end_ = clock();
-				cout <<"Independent attack success probabiltiy calculation time: " <<((double)(end_ - start_) / CLOCKS_PER_SEC) <<endl;
-		//	}
+	cout <<"Start point: " <<startPoint <<", ";
+	cout <<"End point: " <<endPoint <<endl;		
+		// Independent probability of attack success //
+	if(command.compare("ind_poas") == 0){
+		start_ = clock();	
+		PrAtkSuccess(G,startPoint,endPoint,evaluator,relin_keys,public_key,context,secret_key);
+		end_ = clock();
+		cout <<"Independent attack success probabiltiy calculation time: " <<((double)(end_ - start_) / CLOCKS_PER_SEC) <<endl;
 	}
-	/*
 		// Return on Investment (ROSI) //
-		//	if(command.compare("rosi") == 0){
-				int ROItarget;
-				cout <<"Enter target node for compute ROSI: ";
-				cin >>ROItarget;
+	if(command.compare("rosi") == 0){
+		int ROItarget;
+		cout <<"Enter target node for compute ROSI: ";
+		cin >>ROItarget;
 		
-				start_ = clock();	
-				returnInvestment(G, startPoint, endPoint, ROItarget, evaluator, relin_keys, public_key, context, secret_key);
-				end_ = clock();
-				cout <<"ROSI calculation time: " <<((double)(end_ - start_) / CLOCKS_PER_SEC) <<endl;
-		//	}
+		start_ = clock();	
+		returnInvestment(G, startPoint, endPoint, ROItarget, evaluator, relin_keys, public_key, context, secret_key);
+		end_ = clock();
+		cout <<"ROSI calculation time: " <<((double)(end_ - start_) / CLOCKS_PER_SEC) <<endl;
+	}
 
-			// Risk & attack cost (probe) //
-		//	if(command.compare("risk") == 0){
-				start_ = clock();	
-				probe(G, startPoint, endPoint, evaluator, relin_keys, public_key, context, secret_key);
-				end_ = clock();
-				cout <<"Attack cost & risk calculation time: " <<((double)(end_ - start_) / CLOCKS_PER_SEC) <<endl;
-		//	}
+		// Risk & attack cost (probe) //
+	if(command.compare("risk") == 0){
+		start_ = clock();	
+		probe(G, startPoint, endPoint, evaluator, relin_keys, public_key, context, secret_key);
+		end_ = clock();
+		cout <<"Attack cost & risk calculation time: " <<((double)(end_ - start_) / CLOCKS_PER_SEC) <<endl;
+	}
 			// Cumulative attack success //
-		//	if(command.compare("cum_poas") == 0){
-				start_ = clock();	
-				cumulPrAtkSuccess(G, startPoint, evaluator, relin_keys, public_key, context, secret_key);
-				end_ = clock();
-				cout <<"Cumulative attack cost calculation time: " << ((double)(end_ - start_) / CLOCKS_PER_SEC) <<endl;
-		//	}
-	*/
-	/*
-	// Shortest path length (SPL) //
-	if(command.compare("spl") == 0){
+	if(command.compare("cum_poas") == 0){
+		start_ = clock();	
+		cumulPrAtkSuccess(G, startPoint, evaluator, relin_keys, public_key, context, secret_key);
+		end_ = clock();
+		cout <<"Cumulative attack cost calculation time: " << ((double)(end_ - start_) / CLOCKS_PER_SEC) <<endl;
+	}
+	
+			// Shortest path length (SPL) //
+ 	if(command.compare("spl") == 0){
 		start_ = clock();	
 		int shortestLen = minLength(G, startPoint, endPoint);
-		end_ = clock();
+	 	end_ = clock();
 		cout <<"SPL calculation time: " <<((double)(end_ - start_) / CLOCKS_PER_SEC) <<endl;
 	}
-
-	// Mean path length (MPL) //
+			// Mean path length (MPL) //
 	if(command.compare("mpl") == 0){
 		start_ = clock();	
 		double meanLen = mpl(G, startPoint, endPoint);
@@ -152,9 +138,6 @@ int main(int argc, char **argv){
 	}
 
 	delete_graph(G);
-*/////////////////////////////////////
-			
-//		}
-//	}
+	return 0;
 }
 
