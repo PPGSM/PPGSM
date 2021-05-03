@@ -16,7 +16,7 @@ using namespace std;
 ///////////////		adding components of the graph(node & edge)	//////////////
 
 //create a real node
-void createNode(struct Graph &G, int nodeNumber, double weight, double impact, double pr, double logPr, double patch, double inv_patch, bool isUser, bool isTrue, seal::PublicKey public_key, std::shared_ptr<seal::SEALContext> context){
+void createNode(struct Graph &G, int nodeNumber, double weight, double impact, double pr, double logPr, double patch, double inv_patch, bool isUser, bool isTrue, seal::PublicKey public_key, seal::SEALContext context){
 	struct nodeList P;
 	P.unchangeable    = false;
 	P.visited	  = false;
@@ -65,7 +65,7 @@ void createNode(struct Graph &G, int nodeNumber, double weight, double impact, d
 
 
 //create a duumy node
-void createDummyNode(struct Graph &G, int weight, int impact, double pr, double logPr, double patch, double inv_patch, seal::PublicKey public_key, std::shared_ptr<seal::SEALContext> context){
+void createDummyNode(struct Graph &G, int weight, int impact, double pr, double logPr, double patch, double inv_patch, seal::PublicKey public_key, seal::SEALContext context){
         createNode(G, G.node->size(), weight, impact, pr, logPr, patch, inv_patch, false, false, public_key, context);
 }
 
@@ -85,7 +85,7 @@ void createDummyEdge(struct Graph &G, int src, int target, bool isTrue){
 }
 
 //Make a initial graph(not modified) by using adjacent matrix.
-void MakeGraph(Graph& G, char *Mat, char *NodeInfo, char *Trait, seal::PublicKey public_key, std::shared_ptr<seal::SEALContext> context){
+void MakeGraph(Graph& G, char *Mat, char *NodeInfo, char *Trait, seal::PublicKey public_key, seal::SEALContext context){
 	G.node = new std::list<struct nodeList>;
 	// Matrix reading stage
 	vector<vector<int>> V; 

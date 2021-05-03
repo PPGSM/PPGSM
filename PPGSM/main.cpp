@@ -25,27 +25,26 @@ int main(int argc, char **argv){
 				// SEAL setting //
 				//////////////////
 	start_ = clock(); 
-	EncryptionParameters prms(scheme_type::CKKS);
-//	size_t poly_modulus_degree = 8192;
+	EncryptionParameters prms(scheme_type::ckks);
 	size_t poly_modulus_degree = 32768;
 //	cout <<CoeffModulus::MaxBitCount(32768) <<endl;
-//	size_t poly_modulus_degree = 65536;
-//
 	prms.set_poly_modulus_degree(poly_modulus_degree);
-//	prms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, {60, 40, 40, 60}));
 	prms.set_coeff_modulus(CoeffModulus::Create(poly_modulus_degree, {40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40, 40}));	//level: 20
 
 	double scale = pow(2.0, 40);
-	auto context = SEALContext::Create(prms);
+	SEALContext context(prms);
 	KeyGenerator keygen(context);
-	CKKSEncoder encoder(context);
-	auto public_key = keygen.public_key();
     	auto secret_key = keygen.secret_key();
-    	auto relin_keys = keygen.relin_keys();
-	auto gal_keys = keygen.galois_keys();
+	PublicKey public_key;
+       	keygen.create_public_key(public_key);
+    	RelinKeys relin_keys;
+       	keygen.create_relin_keys(relin_keys);
+	GaloisKeys gal_keys;
+       	keygen.create_galois_keys(gal_keys);
     	Encryptor encryptor(context, public_key);
     	Evaluator evaluator(context);
     	Decryptor decryptor(context, secret_key);	//decryptor is only used for check result.
+	CKKSEncoder encoder(context);
 	size_t slot_count = encoder.slot_count();
 	end_ = clock();
 	cout <<"SEAL setting time(s): " <<(double)(end_ - start_) / CLOCKS_PER_SEC <<endl;

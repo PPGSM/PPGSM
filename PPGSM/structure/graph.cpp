@@ -54,7 +54,7 @@ void delete_graph(struct Graph& G)
 	////////////	functions used in evaluating a graph	////////////////
 
 //function to calculate attack cost, risk
-void probe(struct Graph& G, int startNumber, int destNumber, Evaluator &eval, seal::RelinKeys& relin_keys, seal::PublicKey public_key, std::shared_ptr<seal::SEALContext> context, seal::SecretKey secret_key){
+void probe(struct Graph& G, int startNumber, int destNumber, Evaluator &eval, seal::RelinKeys& relin_keys, seal::PublicKey public_key, seal::SEALContext context, seal::SecretKey secret_key){
 	int graphSize = G.node->size();
 	double scale = pow(2.0,40);
 	CKKSEncoder encoder(context);
@@ -316,7 +316,7 @@ struct degree getDegree(struct Graph& G){
 	return V;
 }
 
-void PrAtkSuccess(struct Graph& G, int startNumber, int destNumber, Evaluator &eval, seal::RelinKeys& relin_keys, seal::PublicKey public_key, std::shared_ptr<seal::SEALContext> context, seal::SecretKey secret_key){
+void PrAtkSuccess(struct Graph& G, int startNumber, int destNumber, Evaluator &eval, seal::RelinKeys& relin_keys, seal::PublicKey public_key, seal::SEALContext context, seal::SecretKey secret_key){
 	double scale = pow(2.0,40);
 	CKKSEncoder encoder(context);
 	Encryptor encryptor(context, public_key);
@@ -943,7 +943,7 @@ void PrAtkSuccess(struct Graph& G, int startNumber, int destNumber, Evaluator &e
 	return;
 }
 
-void levelUpSEAL(Ciphertext &pr, Evaluator &eval, seal::PublicKey public_key, seal::RelinKeys &relin_keys, std::shared_ptr<seal::SEALContext> context, seal::SecretKey secret_key){
+void levelUpSEAL(Ciphertext &pr, Evaluator &eval, seal::PublicKey public_key, seal::RelinKeys &relin_keys, seal::SEALContext context, seal::SecretKey secret_key){
         double scale = pow(2.0,40);
         CKKSEncoder encoder(context);
         Encryptor encryptor(context, public_key);
@@ -959,7 +959,7 @@ void levelUpSEAL(Ciphertext &pr, Evaluator &eval, seal::PublicKey public_key, se
 	encryptor.encrypt(temp_result, pr);
 }
 
-void cumulPrAtkSuccessProbe(struct Graph& G, struct nodeList& N, vector<int> &inDegree, queue<int> &searchList, vector<Ciphertext> &tempNodePr, vector<Ciphertext> &finalNodePr, int source, Evaluator &eval, seal::PublicKey public_key, seal::RelinKeys &relin_keys, std::shared_ptr<seal::SEALContext> context, seal::SecretKey secret_key){
+void cumulPrAtkSuccessProbe(struct Graph& G, struct nodeList& N, vector<int> &inDegree, queue<int> &searchList, vector<Ciphertext> &tempNodePr, vector<Ciphertext> &finalNodePr, int source, Evaluator &eval, seal::PublicKey public_key, seal::RelinKeys &relin_keys, seal::SEALContext context, seal::SecretKey secret_key){
 	
 //TODO	
 	int graphSize = G.node->size();
@@ -1018,7 +1018,7 @@ void cumulPrAtkSuccessProbe(struct Graph& G, struct nodeList& N, vector<int> &in
 }
 
 
-void cumulPrAtkSuccess(struct Graph& G, int startNumber, Evaluator &eval, seal::RelinKeys& relin_keys, seal::PublicKey public_key, std::shared_ptr<seal::SEALContext> context, seal::SecretKey secret_key){
+void cumulPrAtkSuccess(struct Graph& G, int startNumber, Evaluator &eval, seal::RelinKeys& relin_keys, seal::PublicKey public_key, seal::SEALContext context, seal::SecretKey secret_key){
 	int graphSize = G.node->size();
 	double scale = pow(2.0,40);
 	CKKSEncoder encoder(context);
@@ -1071,7 +1071,7 @@ void cumulPrAtkSuccess(struct Graph& G, int startNumber, Evaluator &eval, seal::
 }
 
 //function to calculate return on investment
-void returnInvestment(struct Graph& G, int startNumber, int destNumber, int target, Evaluator &eval, seal::RelinKeys& relin_keys, seal::PublicKey public_key, std::shared_ptr<seal::SEALContext> context, seal::SecretKey secret_key){
+void returnInvestment(struct Graph& G, int startNumber, int destNumber, int target, Evaluator &eval, seal::RelinKeys& relin_keys, seal::PublicKey public_key, seal::SEALContext context, seal::SecretKey secret_key){
 	int graphSize = G.node->size();
 	double scale = pow(2.0,40);
 	CKKSEncoder encoder(context);
