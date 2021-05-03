@@ -5,7 +5,7 @@ This software enables one to evaluate the security of a network system in a priv
 
 Prerequesites
 - OS: Ubuntu 18.04 above   
-- HE libraries: SEAL have to be installed.    
+- HE libraries: SEAL have to be installed. (We use version 3.6.2 for implementation)
 
 1. Installating and Testing
 
