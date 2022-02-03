@@ -1,18 +1,24 @@
-# PP-GSM
+## PP-GSM
 Privacy Preserving Graphical Security Model   
 
 This software enables one to evaluate the security of a network system in a privacy preserving mannaer.
 
-Prerequesites
+# Project members
+Dongwon Lee, Sungkyunkwan University, Suwon, Republic of Korea
+Yongwoo Oh, Sungkyunkwan University, Suwon, Republic of Korea
+Hyoungshick Kim, Sungkyunkwan University, Suwon, Republic of Korea
+Jin B. Hong, University of Western Australia, Perth, Australia
+Dongseong Kim, University of Queensland, Brisbane, Australia
+
+# Prerequesites
 - OS: Ubuntu 18.04 above   
 - HE libraries: SEAL have to be installed. (We use version 3.6.2 for implementation)
 
-1. Installating and Testing
+
+# Installation
 
 Install the SEAL library.    
 To use PPGSM, install a homomorphic encrpytion library which is SEAL.    
-
-1.1. Installing SEAL 
 
 Get SEAL installation file: git clone https://github.com/microsoft/SEAL   
 Go to the SEAL directory:   
@@ -27,7 +33,9 @@ Enter following commands to install:
 
 We can find more details about SEAL installation in https://github.com/microsoft/SEAL.
 
-2. Running testcode    
+
+# Test    
+
 Install PP-GSM module:    
 
     git clone https://github.com/PPGSM/PPGSM
@@ -47,7 +55,7 @@ Run compiled binary:
 
 There are "ind_poas", "rosi", "risk", and "cum_poas" as [security metric info] for calculating independent attack success probability, return on investment, attack cost & risk, and cumulative attack success probabiltiy, respectively.
 
-Utilities
+# Utilities
 
    A. User-side utilites (functions can found in utility/graph_client.h)
     calculating centrality metrics: betweenness centrality (for graph obfuscation)
