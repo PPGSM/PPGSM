@@ -3,12 +3,13 @@ Privacy Preserving Graphical Security Model
 
 This software enables one to evaluate the security of a network system in a privacy preserving mannaer.
 
-## Project members
+<!--## Project members
 - Dongwon Lee, Sungkyunkwan University, Suwon, Republic of Korea
 - Yongwoo Oh, Sungkyunkwan University, Suwon, Republic of Korea
 - Hyoungshick Kim, Sungkyunkwan University, Suwon, Republic of Korea
 - Jin B. Hong, University of Western Australia, Perth, Australia
 - Dongseong Kim, University of Queensland, Brisbane, Australia
+-->
 
 ## Prerequesites
 - OS: Ubuntu 18.04 above   
