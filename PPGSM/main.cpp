@@ -113,7 +113,7 @@ int main(int argc, char **argv) {
   }
 
   // Risk & attack cost (probe) //
-  if (command.compare("risk") == 0) {
+  if (command.compare("ac/risk") == 0) {
     start_ = clock();
     probe(G, startPoint, endPoint, evaluator, relin_keys, public_key, context,
           secret_key);
