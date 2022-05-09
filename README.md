@@ -54,7 +54,7 @@ Run compiled binary:
 
     ./homomorphic_graph testData/[graph file name] testData/testnodetype_60 (testnodetype_103 for "realGraph") testData/testtypeinfo [security metric info]
 
-There are "ind_poas", "rosi", "risk", and "cum_poas" as [security metric info] for calculating independent attack success probability, return on investment, attack cost & risk, and cumulative attack success probabiltiy, respectively.
+There are "ind_poas", "rosi", "ac/risk", and "cum_poas" as [security metric info] for calculating independent attack success probability, return on investment, attack cost & risk, and cumulative attack success probabiltiy, respectively.
 
 ## Utilities
 
