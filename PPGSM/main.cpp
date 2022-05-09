@@ -83,7 +83,7 @@ int main(int argc, char **argv) {
     if (endPoint < G.node->size() && startPoint < G.node->size()) {
       validPoint = true;
     } else {
-      cout << "Invalid Point. Try again." << endl;
+      cout << "Invalid Point. Node index is out of bound. Try again." << endl;
     }
   }
   cout << "Size of the graph: " << G.node->size() << endl;

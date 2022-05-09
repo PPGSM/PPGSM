@@ -58,9 +58,6 @@ void createNode(struct Graph &G, int nodeNumber, double weight, double impact,
   encryptor.encrypt(InvPatchplain, Pn->inversePatch);
   encryptor.encrypt(Dummyplain, Pn->T);
 
-  Pn->exactPr = pr;
-  Pn->exactlogPr = logPr;
-
   //	cout <<"setting: "
   //<<context->get_context_data((Pn->Pr).parms_id())->chain_index() <<endl;
 
@@ -260,6 +257,16 @@ void MakeGraph(Graph &G, char *Mat, char *NodeInfo, char *Trait,
 }
 
 //// functions for creating info which are required to create GSM in server ////
+std::vector<std::string> loadOSlist(std::string input) {
+  vector<string> output;
+  std::ifstream x(input);
+  std::string line;
+  while (std::getline(x, line)) {
+    output.push_back(line);
+  }
+  return output;
+}
+
 void queryData(std::vector<std::string> &OSlist, std::string &targetOS, int NID,
                seal::CKKSEncoder &encoder, seal::Encryptor &encryptor) {
   int index = 0;
@@ -340,14 +347,4 @@ void createTopology(Graph &G) {
   edgeNum << edge_counter;
   nodeNum.close();
   edgeNum.close();
-}
-
-std::vector<std::string> loadOSlist(std::string input) {
-  vector<string> output;
-  std::ifstream x(input);
-  std::string line;
-  while (std::getline(x, line)) {
-    output.push_back(line);
-  }
-  return output;
 }
